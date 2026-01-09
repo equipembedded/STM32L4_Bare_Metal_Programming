@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    main.c
-  * @author  Vusal Hasanov
+  * @author  Equip Embedded
   * @brief   Bare-metal STM32 register example.
   *
   *          This file contains:
@@ -12,7 +12,7 @@
   ******************************************************************************
   * MIT License
   *
-  * Copyright (c) 2025 Vusal Hasanov
+  * Copyright (c) 2025 Equip Embedded
   *
   * Permission is hereby granted, free of charge, to any person obtaining a copy
   * of this software and associated documentation files (the "Software"), to deal

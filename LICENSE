@@ -1,4 +1,4 @@
-MIT License for Vusal Hasanov’s code only
+MIT License for Equip Embedded’s code only
 
 Note: This license applies only to files authored by Vusal Hasanov.
 STM32CubeIDE-generated files (startup, .ld, HAL drivers, etc) remain under STMicroelectronics copyright.
@@ -7,7 +7,7 @@ STM32CubeIDE-generated files (startup, .ld, HAL drivers, etc) remain under STMic
 
 MIT License
 
-Copyright (c) 2026 Vusal Hasanov
+Copyright (c) 2026 Equip Embedded
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
