@@ -34,46 +34,29 @@
   ******************************************************************************
   */
 
-#include <stdint.h>   // Gives us standard integer types (like uint32_t)
-
-// Base address of the clock control block (RCC)
-#define RCC_BASE 0x40021000U
-
-// Register that turns hardware blocks (like GPIO) on or off
-#define RCC_AHB2ENR (*(volatile uint32_t*)(RCC_BASE + 0x4CU))
-
-// Base addresses for GPIO ports A and B
-#define GPIOA_BASE 0x48000000U
-#define GPIOB_BASE 0x48000400U
-
-// GPIOA registers
-#define GPIOA_MODER (*(volatile uint32_t*)(GPIOA_BASE + 0x00U)) // Controls pin modes
-#define GPIOA_BSRR  (*(volatile uint32_t*)(GPIOA_BASE + 0x18U)) // Sets or resets pins
-
-// GPIOB registers
-#define GPIOB_MODER (*(volatile uint32_t*)(GPIOB_BASE + 0x00U)) // Controls pin modes
-#define GPIOB_BSRR  (*(volatile uint32_t*)(GPIOB_BASE + 0x18U)) // Sets or resets pins
+#include "stm32l432xx.h"
 
 int main(void)
 {
 	// Turn on the clock for GPIOA and GPIOB
 	// If the clock is off, the pins will not work
-	RCC_AHB2ENR |= 0x03;
+//	RCC_AHB2ENR |= 0x03;
+	RCC->AHB2ENR |= 0x03;
 
 	// First, clear their mode settings
-	GPIOA_MODER &= 0xFC000000;
+	GPIOA->MODER &= 0xFC000000;
 
 	// Set those pins to "output mode"
-	GPIOA_MODER |= 0x01555555;
+	GPIOA->MODER |= 0x01555555;
 
 	// Do the same thing for selected pins on GPIOB
-	GPIOB_MODER &= 0xFFFF0030;
-	GPIOB_MODER |= 0x00005545;
+	GPIOB->MODER &= 0xFFFF0030;
+	GPIOB->MODER |= 0x00005545;
 
 	// Set GPIOA pins high (turn them ON)
-	GPIOA_BSRR |= 0x1FFF;
+	GPIOA->BSRR |= 0x1FFF;
 
 	// Set GPIOB pins high (turn them ON)
-	GPIOB_BSRR |= 0xFB;
+	GPIOB->BSRR |= 0xFB;
 }
 

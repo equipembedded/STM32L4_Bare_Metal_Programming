@@ -1,20 +1,21 @@
 All code written by Equip Embedded in this repository is licensed under the MIT License.
 STM32CubeIDE-generated files (startup, .ld, HAL drivers) remain under STMicroelectronics copyright.
 
-# STM32 Nucleo Bare-Metal Blinky (Lesson 01)
+# STM32 Nucleo Bare-Metal Series — Struct-Based Register Access (Lesson 02)
 
-This repository contains **bare-metal STM32L4 code** for blinking LEDs on a Nucleo board.  
-All programming is done **directly via registers**, without HAL or external libraries.
+This repository contains **bare-metal STM32L4 code** demonstrating **register access using CMSIS-style struct pointers**.  
+All programming is done **directly via memory-mapped structs**, without HAL or external libraries.
 
 ## Features
-- Register-level GPIO control  
-- No HAL, no libraries  
-- Example for GPIOA and GPIOB pins  
+- Struct-based peripheral register access  
+- No HAL, no abstraction layers  
+- Cleaner and safer register manipulation  
+- CMSIS-aligned coding style  
 
 ## Code Overview
-- Enable GPIO clocks via `RCC_AHB2ENR`  
-- Configure pins as output via `GPIOx_MODER`  
-- Set/reset pins via `GPIOx_BSRR`  
+- Peripheral base addresses mapped to C structs  
+- Typed pointers for register access  
+- Bit-level control with readable code  
 
 ## Board
 - STM32 Nucleo L4 series  
