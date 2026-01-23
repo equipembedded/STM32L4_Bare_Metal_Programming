@@ -1,15 +1,14 @@
 /**
   ******************************************************************************
-  * @file    main.c
+  * @file    gpio.h
   * @author  Equip Embedded
-  * @brief   Bare-metal STM32 register example.
+  * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
-  *          This file main contain:
+  *          This file may contain:
   *           - Data structures and address mapping for peripherals
   *           - Register declarations and bit definitions
   *           - Macros to access hardware registers
-  *           - Function calls
   *
   ******************************************************************************
   * MIT License
@@ -36,29 +35,33 @@
   ******************************************************************************
   */
 
-#include "device_drivers/gpio.h"
+#ifndef DEVICE_DRIVERS_GPIO_H_
+#define DEVICE_DRIVERS_GPIO_H_
 
-int main(void)
-{
-	// Enable the clock for GPIO Port A and Port B
-	// Without enabling the clock, GPIO registers will not respond
-	RCC->AHB2ENR |= 0x03;
+// Include the STM32 device-specific register definitions
+// This gives access to GPIO_TypeDef and peripheral registers
+#include "device_headers/stm32l432xx.h"
 
-	// Initialize GPIOA pin 3
-	// Parameters typically configure: port, pin number, mode (output),
-	// output type, speed, and pull-up/pull-down settings
-	GPIO_Init(GPIOA, 3, 1, 0, 0, 0);
+// Initialize a GPIO pin with basic configuration options
+// port        : GPIO port base address (e.g., GPIOA, GPIOB)
+// pin         : Pin number (0–15)
+// mode        : Pin mode (input, output, alternate, analog)
+// outputType  : Push-pull or open-drain
+// outputSpeed : Output speed selection
+// pullUpDown  : Pull-up, pull-down, or no pull resistor
+void GPIO_Init(GPIO_TypeDef * port,
+				uint8_t pin,
+				uint8_t mode,
+				uint8_t outputType,
+				uint8_t outputSpeed,
+				uint8_t pullUpDown);
 
-	// Set GPIOA pin 3 HIGH (logic 1)
-	// This will drive the pin high (e.g., turn an LED ON if connected)
-	GPIO_WritePin(GPIOA, 3, 1);
+// Write a logic value to a GPIO pin
+// port  : GPIO port base address
+// pin   : Pin number (0–15)
+// value : 1 = set pin HIGH, 0 = set pin LOW
+void GPIO_WritePin(GPIO_TypeDef * port,
+				uint8_t pin,
+				uint8_t value);
 
-	// Set GPIOA pin 3 LOW (logic 0)
-	// This will drive the pin low (e.g., turn the LED OFF)
-	GPIO_WritePin(GPIOA, 3, 0);
-
-	// Set GPIOA pin 3 HIGH again
-	// Demonstrates toggling the pin state in software
-	GPIO_WritePin(GPIOA, 3, 1);
-}
-
+#endif /* DEVICE_DRIVERS_GPIO_H_ */

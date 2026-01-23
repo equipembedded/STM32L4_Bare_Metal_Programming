@@ -1,0 +1,2 @@
+../Src/device_drivers/gpio.c:41:6:GPIO_Init	1
+../Src/device_drivers/gpio.c:81:6:GPIO_WritePin	2
