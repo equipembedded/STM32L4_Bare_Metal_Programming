@@ -40,10 +40,10 @@
 
 void GPIO_Init(GPIO_TypeDef * port,
 		uint8_t pin,
-		uint8_t mode,
-		uint8_t outputType,
-		uint8_t outputSpeed,
-		uint8_t pullUpDown){
+		GPIO_Mode_t mode,
+		GPIO_OutputType_t outputType,
+		GPIO_OutputSpeed_t outputSpeed,
+		GPIO_Pull_t pullUpDown){
 
 	// -------- GPIO MODE CONFIGURATION --------
 	// Each pin uses 2 bits in MODER
@@ -80,7 +80,7 @@ void GPIO_Init(GPIO_TypeDef * port,
 
 void GPIO_WritePin(GPIO_TypeDef * port,
 				uint8_t pin,
-				uint8_t value) {
+				GPIO_Level_t value) {
 
 	// Check whether we want to set the pin HIGH or LOW
 	if (value == 1U) {
@@ -94,4 +94,19 @@ void GPIO_WritePin(GPIO_TypeDef * port,
 	}
 }
 
+
+GPIO_Level_t GPIO_ReadPin(GPIO_TypeDef * port, uint8_t pin){
+	uint32_t value = 0U;
+
+	// Read the pin's current state from IDR register
+	// Mask isolates just the bit for our pin
+	value = port->IDR & (1UL << pin);
+
+	// Return HIGH if the pin's bit is set, otherwise LOW
+	if (value != 0U) {
+		return GPIO_HIGH;
+	} else {
+		return GPIO_LOW;
+	}
+}
 

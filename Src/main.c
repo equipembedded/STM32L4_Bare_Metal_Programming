@@ -5,7 +5,7 @@
   * @brief   Bare-metal STM32 register example.
   * @note    This copyright applies only to this file.
   *
-  *          This file main contain:
+  *          This file may contain:
   *           - Data structures and address mapping for peripherals
   *           - Register declarations and bit definitions
   *           - Macros to access hardware registers
@@ -40,25 +40,27 @@
 
 int main(void)
 {
-	// Enable the clock for GPIO Port A and Port B
-	// Without enabling the clock, GPIO registers will not respond
+	// Enable clock for GPIO Ports A and B (required for register access)
 	RCC->AHB2ENR |= 0x03;
 
-	// Initialize GPIOA pin 3
-	// Parameters typically configure: port, pin number, mode (output),
-	// output type, speed, and pull-up/pull-down settings
-	GPIO_Init(GPIOA, 3, 1, 0, 0, 0);
+	// Configure PA3 as output (will control an LED or other device)
+	GPIO_Init(GPIOA, GPIO_PIN_3, GPIO_MODE_OUTPUT,
+			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
 
-	// Set GPIOA pin 3 HIGH (logic 1)
-	// This will drive the pin high (e.g., turn an LED ON if connected)
-	GPIO_WritePin(GPIOA, 3, 1);
+	// Configure PA4 as input with pull-down resistor (for reading a button/switch)
+	GPIO_Init(GPIOA, GPIO_PIN_4, GPIO_MODE_INPUT,
+			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_DOWN);
 
-	// Set GPIOA pin 3 LOW (logic 0)
-	// This will drive the pin low (e.g., turn the LED OFF)
-	GPIO_WritePin(GPIOA, 3, 0);
+	while(1) {
+		// Read the state of PA4 (button/switch)
+		volatile GPIO_Level_t port_A_pin_4 = GPIO_ReadPin(GPIOA, GPIO_PIN_4);
 
-	// Set GPIOA pin 3 HIGH again
-	// Demonstrates toggling the pin state in software
-	GPIO_WritePin(GPIOA, 3, 1);
+		// If PA4 is HIGH, turn PA3 ON. If PA4 is LOW, turn PA3 OFF
+		if (port_A_pin_4 == GPIO_HIGH) {
+			GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_HIGH);
+		} else {
+			GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_LOW);
+		}
+	}
 }
 
