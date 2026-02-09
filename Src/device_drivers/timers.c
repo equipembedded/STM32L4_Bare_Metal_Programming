@@ -1,15 +1,15 @@
 /**
   ******************************************************************************
-  * @file    main.c
+  * @file    timers.c
   * @author  Equip Embedded
-  * @brief   Bare-metal STM32 register example.
+  * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
   *          This file may contain:
-  *           - Data structures and address mapping for peripherals
-  *           - Register declarations and bit definitions
-  *           - Macros to access hardware registers
-  *           - Function calls
+  *           - Bare-metal timer and PWM driver implementations
+  *           - Timer initialization and control functions
+  *           - Register-level configuration for STM32 timers
+  *           - Educational examples for PWM generation
   *
   ******************************************************************************
   * MIT License
@@ -36,34 +36,46 @@
   ******************************************************************************
   */
 
-#include "device_drivers/gpio.h"
 #include "device_drivers/timers.h"
 
-int main(void)
-{
-	// Enable clock for GPIO ports A and B
-	// Without this, GPIO registers cannot be accessed
-	RCC->AHB2ENR |= 0x03;
+void PWM_Init(TIM_TypeDef * timer) {
 
-	// Enable clock for TIM2
-	// The timer will not run unless its peripheral clock is enabled
-	RCC->APB1ENR1 |= 0x01U;
+	// Enable Auto-Reload Preload (ARPE)
+	// Allows ARR updates to take effect on an update event instead of immediately
+	timer->CR1 |= 0x80U;
 
-	// Configure PA0 as an alternate-function output
-	// This allows the pin to be driven by a peripheral (TIM2) instead of software
-	GPIO_Init(GPIOA, GPIO_PIN_0, GPIO_MODE_ALTERNATE,
-			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
+	// Configure Channel 1 for PWM mode 1 and enable preload
+	// OC1M = 110 (PWM mode 1), OC1PE = 1 (preload enable)
+	timer->CCMR1 |= 0x68U;
 
-	// Select Alternate Function 1 on PA0
-	// AF1 connects PA0 to TIM2 Channel 1 (PWM output)
-	SelectAltFunction(GPIOA, GPIO_PIN_0, AF1);
+	// Enable Capture/Compare Channel 1 output
+	// This connects the timer output to the GPIO pin
+	timer->CCER |= 0x01U;
 
-	// Initialize TIM2 for PWM operation
-	// Sets up prescaler, auto-reload, compare mode, and preload behavior
-	PWM_Init(TIM2);
+	// Clear the counter to start counting from zero
+	timer->CNT |= 0U;
 
-	// Start the PWM signal
-	// Enables the timer counter and begins waveform generation
-	PWM_Begin(TIM2);
+	// Set prescaler
+	// Divides the timer clock to slow down the counter
+	timer->PSC = 40U - 1U;
+
+	// Set auto-reload value (PWM period)
+	// Timer resets when CNT reaches ARR
+	timer->ARR = 1000U - 1U;
+
+	// Set compare value (PWM duty cycle)
+	// Determines how long the output stays high
+	timer->CCR1 = 100U - 1U;
+
+	// Generate an update event
+	// Forces PSC, ARR, and CCR values to load into active registers
+	timer->EGR |= 0x01U;
+}
+
+void PWM_Begin(TIM_TypeDef * timer) {
+
+	// Enable the timer counter
+	// PWM output starts running
+	timer->CR1 |= 0x01;
 }
 

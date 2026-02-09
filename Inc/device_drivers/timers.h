@@ -1,15 +1,15 @@
 /**
   ******************************************************************************
-  * @file    main.c
+  * @file    timers.h
   * @author  Equip Embedded
-  * @brief   Bare-metal STM32 register example.
+  * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
   *          This file may contain:
-  *           - Data structures and address mapping for peripherals
-  *           - Register declarations and bit definitions
-  *           - Macros to access hardware registers
-  *           - Function calls
+  *           - Timer and PWM driver function prototypes
+  *           - Low-level register definitions and helper macros
+  *           - Timer configuration utilities for bare-metal development
+  *
   *
   ******************************************************************************
   * MIT License
@@ -36,34 +36,19 @@
   ******************************************************************************
   */
 
-#include "device_drivers/gpio.h"
-#include "device_drivers/timers.h"
+#include <stdint.h>
+#include "device_headers/stm32l432xx.h"
 
-int main(void)
-{
-	// Enable clock for GPIO ports A and B
-	// Without this, GPIO registers cannot be accessed
-	RCC->AHB2ENR |= 0x03;
+#ifndef DEVICE_DRIVERS_TIMERS_H_
+#define DEVICE_DRIVERS_TIMERS_H_
 
-	// Enable clock for TIM2
-	// The timer will not run unless its peripheral clock is enabled
-	RCC->APB1ENR1 |= 0x01U;
+// Initializes a timer peripheral for PWM operation
+// Configures prescaler, auto-reload, compare mode, and preload settings
+// Does NOT start the timer
+void PWM_Init(TIM_TypeDef * timer);
 
-	// Configure PA0 as an alternate-function output
-	// This allows the pin to be driven by a peripheral (TIM2) instead of software
-	GPIO_Init(GPIOA, GPIO_PIN_0, GPIO_MODE_ALTERNATE,
-			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
+// Starts PWM signal generation
+// Enables the timer counter and begins output on the configured channel
+void PWM_Begin(TIM_TypeDef * timer);
 
-	// Select Alternate Function 1 on PA0
-	// AF1 connects PA0 to TIM2 Channel 1 (PWM output)
-	SelectAltFunction(GPIOA, GPIO_PIN_0, AF1);
-
-	// Initialize TIM2 for PWM operation
-	// Sets up prescaler, auto-reload, compare mode, and preload behavior
-	PWM_Init(TIM2);
-
-	// Start the PWM signal
-	// Enables the timer counter and begins waveform generation
-	PWM_Begin(TIM2);
-}
-
+#endif /* DEVICE_DRIVERS_TIMERS_H_ */

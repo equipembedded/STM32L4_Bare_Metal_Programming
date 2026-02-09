@@ -110,3 +110,22 @@ GPIO_Level_t GPIO_ReadPin(GPIO_TypeDef * port, uint8_t pin){
 	}
 }
 
+void SelectAltFunction(GPIO_TypeDef * port, uint8_t pin, uint8_t alt_func) {
+	// Mask to ensure only the lower 4 bits are used (AF0–AF15)
+	alt_func &= 0xFU;
+
+	if (pin <= 7) {
+		// Pins 0–7 use AFR[0] (low alternate function register)
+		// Clear existing AF bits for this pin
+		port->AFR[0] &= ~(0xFUL << (pin * 4U));
+		// Set the new alternate function for this pin
+		port->AFR[0] |= ((uint32_t)(alt_func << (pin * 4U)));
+	} else {
+		// Pins 8–15 use AFR[1] (high alternate function register)
+		// Clear existing AF bits for this pin
+		port->AFR[1] &= ~(0xFUL << ((pin - 8U) * 4U));
+		// Set the new alternate function for this pin
+		port->AFR[1] |= ((uint32_t)(alt_func << ((pin - 8U) * 4U)));
+	}
+}
+

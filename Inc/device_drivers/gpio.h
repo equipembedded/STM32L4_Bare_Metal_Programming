@@ -59,6 +59,23 @@
 #define GPIO_PIN_14  14U
 #define GPIO_PIN_15  15U
 
+#define AF0  0U
+#define AF1  1U
+#define AF2  2U
+#define AF3  3U
+#define AF4  4U
+#define AF5  5U
+#define AF6  6U
+#define AF7  7U
+#define AF8  8U
+#define AF9  9U
+#define AF10 10U
+#define AF11 11U
+#define AF12 12U
+#define AF13 13U
+#define AF14 14U
+#define AF15 15U
+
 //#define GPIO_MODE_INPUT        0x00U
 //#define GPIO_MODE_OUTPUT       0x01U
 //#define GPIO_MODE_ALTERNATE    0x02U
@@ -141,5 +158,12 @@ void GPIO_WritePin(GPIO_TypeDef * port,
 // pin   : Pin number (0–15)
 // returns: GPIO_HIGH (1) or GPIO_LOW (0)
 GPIO_Level_t GPIO_ReadPin(GPIO_TypeDef * port, uint8_t pin);
+
+// Configures the alternate function for a GPIO pin
+// port     : GPIO port base address
+// pin      : GPIO pin number (0–15)
+// alt_func : Alternate function number (AF0–AF15)
+//            Connects the pin to a peripheral (timer, UART, SPI, etc.)
+void SelectAltFunction(GPIO_TypeDef * port, uint8_t pin, uint8_t alt_func);
 
 #endif /* DEVICE_DRIVERS_GPIO_H_ */
