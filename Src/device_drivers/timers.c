@@ -79,3 +79,44 @@ void PWM_Begin(TIM_TypeDef * timer) {
 	timer->CR1 |= 0x01;
 }
 
+void DC_MD_Init( uint16_t freq_hz) {
+	// Enable Auto-Reload Preload (ARPE)
+	// Allows ARR updates to take effect on an update event instead of immediately
+	TIM2->CR1 |= 0x80U;
+
+	// Configure Channel 1 for PWM mode 1 and enable preload
+	// OC1M = 110 (PWM mode 1), OC1PE = 1 (preload enable)
+	TIM2->CCMR1 |= 0x68U;
+
+	// Enable Capture/Compare Channel 1 output
+	// This connects the timer output to the GPIO pin
+	TIM2->CCER |= 0x01U;
+
+	// Clear the counter to start counting from zero
+	TIM2->CNT |= 0U;
+
+	// Set prescaler
+	// Divides the timer clock to slow down the counter
+	TIM2->PSC = DC_MC_PRESCALER - 1U;
+
+	// Set auto-reload value (PWM period)
+	// Timer resets when CNT reaches ARR
+	TIM2->ARR = CLK_4MHZ / (DC_MC_PRESCALER * freq_hz) - 1;
+
+	// Set compare value (PWM duty cycle)
+	// Determines how long the output stays high
+	TIM2->CCR1 = 0U;
+
+	// Generate an update event
+	// Forces PSC, ARR, and CCR values to load into active registers
+	TIM2->EGR |= 0x01U;
+
+	TIM2->CR1 |= 0x01;  // Enable timer counter (CEN bit)
+}
+
+void DC_MD_SetSpeed(uint8_t duty_percent) {
+    volatile uint32_t arr_value = TIM2->ARR;  // Read current auto-reload value
+
+    TIM2->CCR1 = (arr_value + 1) * duty_percent / 100;  // Calculate and set compare value for duty cycle
+}
+

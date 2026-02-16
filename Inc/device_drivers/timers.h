@@ -42,6 +42,10 @@
 #ifndef DEVICE_DRIVERS_TIMERS_H_
 #define DEVICE_DRIVERS_TIMERS_H_
 
+// Defines
+#define CLK_4MHZ			4000000U   // Timer clock frequency in Hz (4 MHz)
+#define DC_MC_PRESCALER		4U         // Prescaler value for PWM frequency calculation
+
 // Initializes a timer peripheral for PWM operation
 // Configures prescaler, auto-reload, compare mode, and preload settings
 // Does NOT start the timer
@@ -49,6 +53,12 @@ void PWM_Init(TIM_TypeDef * timer);
 
 // Starts PWM signal generation
 // Enables the timer counter and begins output on the configured channel
-void PWM_Begin(TIM_TypeDef * timer);
+void PWM_Begin(TIM_TypeDef * timer);  // Timer peripheral to start PWM on
+
+// Initializes DC motor driver with specified frequency
+void DC_MD_Init(uint16_t freq_hz);    // PWM frequency in Hertz
+
+// Sets motor speed by adjusting PWM duty cycle
+void DC_MD_SetSpeed(uint8_t duty_percent);  // Duty cycle 0-100%
 
 #endif /* DEVICE_DRIVERS_TIMERS_H_ */
