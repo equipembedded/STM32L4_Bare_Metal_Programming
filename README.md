@@ -26,7 +26,7 @@ You'll learn how to interface with motor drivers, calculate appropriate PWM freq
 - Direct register manipulation of TIM2 for PWM generation
 
 ## Hardware Components
-- **STM32 Nucleo-STM32L432
+- **STM32 Nucleo-STM32L432**
 - **DRV8833 Motor Driver Module**
 - **DC Motor (3-6V)**
 - **2x Push Buttons** (with internal pull-down resistors)
@@ -43,7 +43,7 @@ You'll learn how to interface with motor drivers, calculate appropriate PWM freq
 
 ## What You'll Learn
 1. How to read motor driver datasheets
-2. How to calculate timer prescaler and auto-reload values for any frequency
+2. How to calculate timer prescaler and auto-reload values for varying frequencies
 3. How to interface push buttons with input mode and pull-down resistors
 4. How to implement speed control with bounds checking
 5. How to structure reusable bare-metal peripheral drivers
