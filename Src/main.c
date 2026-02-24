@@ -60,13 +60,6 @@ int main(void)
 	// The timer will not run unless its peripheral clock is enabled
 	RCC->APB1ENR1 |= 0x01U;            // Enable TIM2 clock
 
-	// Configure PB4 as input with pull-down for speed up button
-	GPIO_Init(GPIOB, GPIO_PIN_4, GPIO_MODE_INPUT,
-			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_DOWN);
-
-	// Configure PB5 as input with pull-down for slow down button
-	GPIO_Init(GPIOB, GPIO_PIN_5, GPIO_MODE_INPUT,
-			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_DOWN);
 
 	// Configure PA0 as an alternate-function output
 	// This allows the pin to be driven by a peripheral (TIM2) instead of software
@@ -77,42 +70,14 @@ int main(void)
 	// AF1 connects PA0 to TIM2 Channel 1 (PWM output)
 	SelectAltFunction(GPIOA, GPIO_PIN_0, AF1);
 
-	DC_MD_Init(5000);                  // Initialize motor driver with 5kHz PWM
+	// Initialize servo with 20ms period (50Hz) - the standard timing all servos require
+	// Then sweep through all positions from 0° to 180° and back to 0°
+	ServoMotor_Init(20);
 
-	volatile int8_t motor_speed = 0;   // Current motor speed 0-100%
-
-	while(1) {
-		// Read button states
-		volatile GPIO_Level_t speedUp = GPIO_ReadPin(GPIOB, GPIO_PIN_4);
-		volatile GPIO_Level_t slowDown = GPIO_ReadPin(GPIOB, GPIO_PIN_5);
-
-		if (speedUp == GPIO_HIGH) {    // Speed up button pressed
-			// Speed up the motor
-
-			motor_speed++;             // Increase speed by 1%
-
-			if (motor_speed > 100) {   // Cap at maximum
-				motor_speed = 100;
-			}
-
-			DC_MD_SetSpeed(motor_speed);  // Apply new speed setting
-
-			delay_ms(20);               // Small delay
-		}
-
-		if (slowDown == GPIO_HIGH) {   // Slow down button pressed
-			// Slow down the motor
-
-			motor_speed--;              // Decrease speed by 1%
-
-			if (motor_speed < 0) {      // Cap at minimum
-				motor_speed = 0;
-			}
-
-			DC_MD_SetSpeed(motor_speed);  // Apply new speed setting
-
-			delay_ms(20);                // Small delay
-		}
-	}
-
+	SetServoDirection_Degrees(20, 0);
+	SetServoDirection_Degrees(20, 45);
+	SetServoDirection_Degrees(20, 90);
+	SetServoDirection_Degrees(20, 135);
+	SetServoDirection_Degrees(20, 180);
+	SetServoDirection_Degrees(20, 0);
 }

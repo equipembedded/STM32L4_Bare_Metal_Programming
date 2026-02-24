@@ -120,3 +120,45 @@ void DC_MD_SetSpeed(uint8_t duty_percent) {
     TIM2->CCR1 = (arr_value + 1) * duty_percent / 100;  // Calculate and set compare value for duty cycle
 }
 
+
+void ServoMotor_Init(uint16_t period_ms) {
+	// Enable auto-reload preload (updates ARR on next cycle)
+	TIM2->CR1 |= 0x80U;
+
+	// PWM mode 1, enable preload
+	TIM2->CCMR1 |= 0x68U;
+
+	// Enable channel 1 output
+	TIM2->CCER |= 0x01U;
+
+	// Reset counter
+	TIM2->CNT |= 0U;
+
+	// Set prescaler (clock divider)
+	TIM2->PSC = DC_MC_PRESCALER - 1U;
+
+	// Calculate and set period (20ms for 50Hz)
+    TIM2->ARR = (CLK_4MHZ * period_ms) / (DC_MC_PRESCALER * 1000) - 1;
+
+	// Start with 0% duty cycle
+	TIM2->CCR1 = 0U;
+
+	// Load new values into active registers
+	TIM2->EGR |= 0x01U;
+
+	// Start the timer
+	TIM2->CR1 |= 0x01;
+}
+
+void SetServoDirection_Degrees(uint16_t period_ms, uint8_t servo_angle){
+	uint32_t arr = TIM2->ARR;  // Get current period value
+
+	// Clamp angle to valid range (0-180°)
+	if (servo_angle > 180) servo_angle = 180;
+
+	// Convert angle to pulse width (500-2500µs)
+	uint32_t pulse_us = 500 + ((uint32_t)servo_angle * 2000) / 180;
+
+	// Convert pulse width to compare value and update duty cycle
+	TIM2->CCR1 = (pulse_us * (arr + 1)) / (period_ms * 1000);
+}

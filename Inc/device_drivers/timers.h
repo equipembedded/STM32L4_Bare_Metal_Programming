@@ -61,4 +61,11 @@ void DC_MD_Init(uint16_t freq_hz);    // PWM frequency in Hertz
 // Sets motor speed by adjusting PWM duty cycle
 void DC_MD_SetSpeed(uint8_t duty_percent);  // Duty cycle 0-100%
 
+// Initialize servo with 20ms period = 50Hz frequency (standard for all hobby servos)
+// This sets up the timer to generate continuous PWM signal
+void ServoMotor_Init(uint16_t period_ms);
+
+// Convert angle (0-180°) to pulse width and update PWM signal
+void SetServoDirection_Degrees(uint16_t period_ms, uint8_t servo_angle);
+
 #endif /* DEVICE_DRIVERS_TIMERS_H_ */
