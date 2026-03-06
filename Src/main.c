@@ -70,14 +70,15 @@ int main(void)
 	// AF1 connects PA0 to TIM2 Channel 1 (PWM output)
 	SelectAltFunction(GPIOA, GPIO_PIN_0, AF1);
 
-	// Initialize servo with 20ms period (50Hz) - the standard timing all servos require
-	// Then sweep through all positions from 0° to 180° and back to 0°
-	ServoMotor_Init(20);
+	// Initialize the BLDC driver with a 20ms period (50Hz)
+	BLDC_Motor_Init(20);
 
-	SetServoDirection_Degrees(20, 0);
-	SetServoDirection_Degrees(20, 45);
-	SetServoDirection_Degrees(20, 90);
-	SetServoDirection_Degrees(20, 135);
-	SetServoDirection_Degrees(20, 180);
-	SetServoDirection_Degrees(20, 0);
+	// Gradually increase motor speed from 0% to 100%
+	for(uint8_t i = 0; i <= 100; i++) {
+	    // Set current motor speed to i%
+	    BLDC_SetSpeed(i);
+	}
+
+	// Stop the motor by setting speed to 0%
+	BLDC_SetSpeed(0);
 }

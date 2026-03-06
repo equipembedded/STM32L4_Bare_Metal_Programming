@@ -162,3 +162,61 @@ void SetServoDirection_Degrees(uint16_t period_ms, uint8_t servo_angle){
 	// Convert pulse width to compare value and update duty cycle
 	TIM2->CCR1 = (pulse_us * (arr + 1)) / (period_ms * 1000);
 }
+
+
+/*
+ * Initializes PWM output used to control the BLDC ESC.
+ * The ESC expects a servo-style PWM signal  (~50Hz).
+ *
+ * period_ms: PWM period in milliseconds (typically 20ms for ESCs)
+ */
+void BLDC_Motor_Init(uint16_t period_ms) {
+
+	// Enable auto-reload preload so ARR updates safely on next cycle
+	TIM2->CR1 |= 0x80U;
+
+	// Configure Channel 1 for PWM Mode 1 and enable CCR preload
+	TIM2->CCMR1 |= 0x68U;
+
+	// Enable output on Channel 1
+	TIM2->CCER |= 0x01U;
+
+	// Reset timer counter
+	TIM2->CNT = 0U;
+
+	// Configure prescaler (divides timer clock)
+	TIM2->PSC = DC_MC_PRESCALER - 1U;
+
+	// Set PWM period (e.g., 20ms → 50Hz signal for ESC)
+    TIM2->ARR = (CLK_4MHZ * period_ms) / (DC_MC_PRESCALER * 1000) - 1;
+
+	// Initialize with minimum throttle pulse (~0% speed)
+	TIM2->CCR1 = ((TIM2->ARR + 1) * 45) / 1000;
+
+	// Force update event to load registers immediately
+	TIM2->EGR |= 0x01U;
+
+	// Start the timer
+	TIM2->CR1 |= 0x01;
+}
+
+
+/*
+ * Sets BLDC motor speed by adjusting ESC throttle pulse width.
+ *
+ * speed_percent: throttle value from 0–100%
+ */
+void BLDC_SetSpeed(uint8_t speed_percent) {
+
+	// Clamp input to valid range
+	if (speed_percent > 100) speed_percent = 100;
+
+	uint32_t arr = TIM2->ARR;
+
+	// Convert throttle percentage to ESC pulse width (µs)
+    uint32_t pulse_us = ESC_MIN_US + ((ESC_RANGE_US * speed_percent) / 100);
+
+    // Convert pulse width to timer ticks and update duty cycle
+    TIM2->CCR1 = (pulse_us * (arr + 1)) / 20000;
+
+}
