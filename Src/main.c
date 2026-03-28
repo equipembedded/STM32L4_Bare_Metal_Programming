@@ -37,7 +37,8 @@
   */
 
 #include "device_drivers/gpio.h"
-#include "device_drivers/timers.h"
+#include "device_drivers/spi.h"
+
 
 static void delay_ms(uint32_t ms)
 {
@@ -50,35 +51,54 @@ static void delay_ms(uint32_t ms)
     }
 }
 
+
 int main(void)
 {
-	// Enable clock for GPIO ports A and B
-	// Without this, GPIO registers cannot be accessed
-	RCC->AHB2ENR |= 0x03;              // Enable GPIOA and GPIOB clocks
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;           // Enable GPIOA clock
 
-	// Enable clock for TIM2
-	// The timer will not run unless its peripheral clock is enabled
-	RCC->APB1ENR1 |= 0x01U;            // Enable TIM2 clock
+	RCC->APB2ENR |=  RCC_APB2ENR_SPI1EN;           // Enable SPI1 clock
 
+	// CS
+	GPIO_Init(GPIOA, GPIO_PIN_4, GPIO_MODE_OUTPUT, // Configure CS pin as output
+			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_UP);
 
-	// Configure PA0 as an alternate-function output
-	// This allows the pin to be driven by a peripheral (TIM2) instead of software
-	GPIO_Init(GPIOA, GPIO_PIN_0, GPIO_MODE_ALTERNATE,
+	// CLK
+	GPIO_Init(GPIOA, GPIO_PIN_5, GPIO_MODE_ALTERNATE, // Configure SCK as alternate function
 			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
 
-	// Select Alternate Function 1 on PA0
-	// AF1 connects PA0 to TIM2 Channel 1 (PWM output)
-	SelectAltFunction(GPIOA, GPIO_PIN_0, AF1);
+	// SDI
+	GPIO_Init(GPIOA, GPIO_PIN_6, GPIO_MODE_ALTERNATE, // Configure MISO as alternate function
+			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
 
-	// Initialize the BLDC driver with a 20ms period (50Hz)
-	BLDC_Motor_Init(20);
+	// SDO
+	GPIO_Init(GPIOA, GPIO_PIN_7, GPIO_MODE_ALTERNATE, // Configure MOSI as alternate function
+			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
 
-	// Gradually increase motor speed from 0% to 100%
-	for(uint8_t i = 0; i <= 100; i++) {
-	    // Set current motor speed to i%
-	    BLDC_SetSpeed(i);
+
+
+	// CLK ALT FUNC
+	SelectAltFunction(GPIOA, GPIO_PIN_5, AF5);     // Set SCK to AF5 (SPI1)
+
+	// SDI ALT FUNC
+	SelectAltFunction(GPIOA, GPIO_PIN_6, AF5);     // Set MISO to AF5 (SPI1)
+
+	// SDO ALT FUNC
+	SelectAltFunction(GPIOA, GPIO_PIN_7, AF5);     // Set MOSI to AF5 (SPI1)
+
+	spi_init();                                    // Initialize SPI1 peripheral
+
+	spi_en();                                      // Enable SPI1
+
+	while(1) {
+		// CS LOW
+		GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_LOW);   // Assert chip select
+
+		spi_tx_8bit(0x5A);                            // Transmit 0x5A over SPI
+
+		while(SPI1->SR & SPI_SR_BSY);                 // Wait for transmission to complete
+
+		// CS HIGH
+		GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_HIGH);  // Deassert chip select
 	}
 
-	// Stop the motor by setting speed to 0%
-	BLDC_SetSpeed(0);
 }
