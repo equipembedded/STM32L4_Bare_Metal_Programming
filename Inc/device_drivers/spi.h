@@ -8,7 +8,7 @@
   *          This file contains:
   *           - SPI peripheral initialization (master mode, baud rate, software slave management)
   *           - SPI enable/disable control
-  *           - 8-bit transmit function with TXE flag polling
+  *           - 8-bit tx/rx function
   *           - Register bit definitions for STM32 SPI1 peripheral
   *
   ******************************************************************************
@@ -44,6 +44,6 @@
 
 void spi_init();      // Initialize SPI hardware and pins
 void spi_en();        // Enable SPI peripheral
-void spi_tx_8bit(uint8_t data);  // Transmit single byte over SPI
+uint8_t spi_tx_8bit(uint8_t data);  // Transmit single byte over SPI
 
 #endif /* DEVICE_DRIVERS_SPI_H_ */

@@ -89,16 +89,37 @@ int main(void)
 
 	spi_en();                                      // Enable SPI1
 
+	volatile uint8_t x = 0;
+	volatile int8_t try = 1;
+
 	while(1) {
-		// CS LOW
-		GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_LOW);   // Assert chip select
+	    uint8_t whoami = 0;
 
-		spi_tx_8bit(0x5A);                            // Transmit 0x5A over SPI
+	    // CS LOW
+	    GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_LOW);   // Assert chip select
 
-		while(SPI1->SR & SPI_SR_BSY);                 // Wait for transmission to complete
+	    // Send address: READ_BIT (0x80) | register address 0x00 (WHO_AM_I)
+	    spi_tx_8bit(0x80 | 0x00);
 
-		// CS HIGH
-		GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_HIGH);  // Deassert chip select
+	    // Send dummy byte to clock in response, store received WHO_AM_I value
+	    whoami = spi_tx_8bit(0x00);
+
+	    // Wait for hardware to finish all SPI activity
+	    while(SPI1->SR & SPI_SR_BSY);
+
+	    // CS HIGH
+	    GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_HIGH);  // Deassert chip select
+
+	    // Expected WHO_AM_I for ICM-20948 is 0xEA
+	    if (whoami != 0xEA) {
+	        // Error: wrong device ID - decrement try until zero (infinite loop)
+	        while(try > 0) {
+	            try--;
+	        }
+	    } else {
+	        // Success: increment counter
+	        x++;
+	    }
 	}
 
 }

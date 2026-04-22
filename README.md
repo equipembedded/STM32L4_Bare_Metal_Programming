@@ -1,35 +1,34 @@
 All code written by Equip Embedded in this repository is licensed under the MIT License.
 STM32CubeIDE-generated files (startup, .ld, HAL drivers) remain under STMicroelectronics copyright.
 
-# STM32 Nucleo Bare-Metal Series — SPI Communication (Lesson 09)
+# STM32 Nucleo Bare-Metal Series — ICM-20948 Interface (Lesson 11)
 
-This repository contains **bare-metal STM32L4 code** demonstrating how to **implement SPI (Serial Peripheral Interface) communication**.  
+This repository contains **bare-metal STM32L4 code** demonstrating how to **interface an ICM-20948 9-axis motion tracking device** over SPI.  
 No HAL is used — only CMSIS device headers and memory-mapped registers.
 
-## Lesson 09: SPI Communication
-In this lesson, we build an **SPI driver from scratch** to communicate with SPI peripherals.  
-You'll learn how to configure SPI in master mode, generate clock signals, and transmit data to SPI devices.
+## Lesson 11: ICM-20948 Interface
+In this lesson, we build on the SPI driver from Lesson 09 to **communicate with the ICM-20948 sensor**.  
+You'll learn how to read the WHO_AM_I register, verify device identity, and implement robust SPI read/write functions.
 
 ## Key Concepts Covered
-- **SPI Protocol**: Understanding MOSI, MISO, SCK, and CS lines  
-- **Master Mode Configuration**: Setting up STM32 as SPI master  
-- **Software Slave Management**: Using SSM and SSI bits for manual CS control  
-- **Baud Rate Generation**: Configuring clock dividers for proper SPI speed  
-- **Blocking Transmission**: Polling TXE flag for data transmission  
-- **Bare-Metal Driver Design**: Creating reusable functions for SPI initialization and transmission
+- **ICM-20948 Protocol**: Register map, read/write bit convention  
+- **SPI Read Operation**: Sending address with READ_BIT (0x80), reading response  
+- **SPI Write Operation**: Sending address with WRITE_BIT (0x00), then data  
+- **Device Verification**: Reading WHO_AM_I register (expected 0xEA)  
+- **Robust SPI Functions**: Full-duplex tx/rx for 8-bit transfers  
+- **Bare-Metal Sensor Integration**: Direct register access without HAL
 
 ## Features
 - `spi_init()` – Configure SPI1 in master mode with software slave management  
-- `spi_en()` – Enable SPI peripheral  
-- `spi_tx_8bit(uint8_t data)` – Transmit a single byte over SPI (blocking)  
+- `spi_tx_8bit(uint8_t data)` – Transmit a single byte over SPI, return received byte  
 - Manual CS control via GPIO  
-- Direct register manipulation of SPI1 peripheral  
-- Ready-to-use, reusable bare-metal driver functions
+- ICM-20948 WHO_AM_I verification routine  
+- Direct register manipulation of SPI1 peripheral
 
 ## Hardware Components
 - **STM32 Nucleo-STM32L432**  
-- **SPI Peripheral** (sensor, display, or any SPI device)  
-- **Oscilloscope/Logic Analyzer** (optional, for visualizing SPI signals)
+- **ICM-20948 9-axis motion tracking device** (smartphones, wearables, IoT, drones)  
+- **Logic Analyzer** (optional, for debugging SPI signals)
 
 ## Pin Connections
 | STM32 Pin | SPI Signal | Function                        |
@@ -40,18 +39,18 @@ You'll learn how to configure SPI in master mode, generate clock signals, and tr
 | PA7       | MOSI       | Master Out Slave In (AF5)       |
 
 ## What You'll Learn
-1. How to configure SPI peripheral registers (CR1, CR2, SR, DR)  
-2. How to set baud rate using prescaler bits (BR[2:0])  
-3. How to enable software slave management for manual CS control  
-4. How to poll TXE flag for transmit buffer status  
-5. How to structure reusable bare-metal peripheral drivers  
-6. How to manage CS timing before and after transmission  
-7. The relationship between clock speed, baud rate, and SPI timing
+1. How to read from an SPI sensor using bare-metal code  
+2. How to interpret an ICM-20948 datasheet for register access  
+3. How to send the READ_BIT (0x80) before the register address  
+4. How to verify device connection using WHO_AM_I (0xEA)  
+5. How to debug SPI transactions with a logic analyzer  
+6. How to extend a generic SPI driver for a specific peripheral  
+7. How to handle CS assertion/deassertion timing for reads
 
 ## Code Structure
 - `spi.h` – Function prototypes and register definitions  
-- `spi.c` – SPI driver implementation (initialization, enable, transmit)  
-- `main.c` – GPIO configuration and SPI demo with 0x5A transmission
+- `spi.c` – SPI driver implementation (init, tx/rx)  
+- `main.c` – ICM-20948 WHO_AM_I read and verification loop
 
 ## Board
 - STM32 Nucleo L4 series
@@ -59,5 +58,5 @@ You'll learn how to configure SPI in master mode, generate clock signals, and tr
 ## Disclaimer
 This code is for **educational purposes only**.  
 SPI communication involves direct register manipulation which may cause **unexpected peripheral behavior if misconfigured**.  
-Always verify timing constraints with an oscilloscope or logic analyzer before connecting to sensitive SPI devices.  
+Always verify timing constraints with a logic analyzer before connecting to sensitive SPI devices.  
 The code may contain bugs or simplifications and is **not intended for production or safety-critical applications**.

@@ -7,7 +7,7 @@
   *
   *          This file contains:
   *           - SPI1 hardware initialization for master mode
-  *           - 8-bit blocking transmit function
+  *           - 8-bit blocking tx/rx function
   *           - SPI peripheral enable control
   *
   ******************************************************************************
@@ -50,7 +50,14 @@ void spi_en() {                                     // Enable SPI peripheral
 	SPI1->CR1 |= SPI_CR1_SPE;
 }
 
-void spi_tx_8bit(uint8_t data) {                    // Wait for TX buffer empty then send byte
-	while(!(SPI1->SR & SPI_SR_TXE));
-	*((volatile uint8_t *)&SPI1->DR) = data;
+// Transmits 8 bits over SPI, returns received 8 bits
+uint8_t spi_tx_8bit(uint8_t data) {
+    // Wait for TX buffer empty (can accept new data)
+    while(!(SPI1->SR & SPI_SR_TXE));
+    // Write byte to data register (triggers transmission)
+    *((volatile uint8_t *)&SPI1->DR) = data;
+    // Wait for RX buffer non-empty (data received)
+    while(!(SPI1->SR & SPI_SR_RXNE));
+    // Read and return received byte
+    return *(volatile uint8_t*)&SPI1->DR;
 }
