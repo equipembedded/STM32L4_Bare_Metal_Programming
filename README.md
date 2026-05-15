@@ -1,62 +1,62 @@
 All code written by Equip Embedded in this repository is licensed under the MIT License.
 STM32CubeIDE-generated files (startup, .ld, HAL drivers) remain under STMicroelectronics copyright.
 
-# STM32 Nucleo Bare-Metal Series — ICM-20948 Interface (Lesson 11)
+# STM32 Nucleo Bare-Metal Series — SSD1306 I2C Interface
 
-This repository contains **bare-metal STM32L4 code** demonstrating how to **interface an ICM-20948 9-axis motion tracking device** over SPI.  
+This repository contains **bare-metal STM32L4 code** demonstrating how to **interface an SSD1306 OLED display** over I2C.  
 No HAL is used — only CMSIS device headers and memory-mapped registers.
 
-## Lesson 11: ICM-20948 Interface
-In this lesson, we build on the SPI driver from Lesson 09 to **communicate with the ICM-20948 sensor**.  
-You'll learn how to read the WHO_AM_I register, verify device identity, and implement robust SPI read/write functions.
+## Lesson: SSD1306 I2C Interface
+In this lesson, we build a minimal **bare-metal I2C driver** for STM32L432 and verify communication with an SSD1306 OLED display using address ACK detection.
 
 ## Key Concepts Covered
-- **ICM-20948 Protocol**: Register map, read/write bit convention  
-- **SPI Read Operation**: Sending address with READ_BIT (0x80), reading response  
-- **SPI Write Operation**: Sending address with WRITE_BIT (0x00), then data  
-- **Device Verification**: Reading WHO_AM_I register (expected 0xEA)  
-- **Robust SPI Functions**: Full-duplex tx/rx for 8-bit transfers  
-- **Bare-Metal Sensor Integration**: Direct register access without HAL
+- **I2C Standard Mode**: 100kHz bus configuration  
+- **I2C Peripheral Initialization**: TIMINGR configuration and PE control  
+- **7-bit Addressing**: STM32 hardware-managed address phase  
+- **ACK/NACK Detection**: Verifying slave response through ISR flags  
+- **START and STOP Generation**: Basic I2C transaction control  
+- **Open-Drain Communication**: Proper SDA/SCL GPIO configuration  
+- **Bare-Metal I2C Communication**: Direct register manipulation without HAL
 
 ## Features
-- `spi_init()` – Configure SPI1 in master mode with software slave management  
-- `spi_tx_8bit(uint8_t data)` – Transmit a single byte over SPI, return received byte  
-- Manual CS control via GPIO  
-- ICM-20948 WHO_AM_I verification routine  
-- Direct register manipulation of SPI1 peripheral
+- `i2c_init()` – Configure I2C1 for 100kHz standard mode  
+- `i2c_check_addr(uint8_t addr)` – Verify slave ACK response  
+- Automatic START and STOP generation  
+- Direct register manipulation of I2C1 peripheral  
+- Minimal bare-metal I2C implementation
 
 ## Hardware Components
 - **STM32 Nucleo-STM32L432**  
-- **ICM-20948 9-axis motion tracking device** (smartphones, wearables, IoT, drones)  
-- **Logic Analyzer** (optional, for debugging SPI signals)
+- **SSD1306 OLED Display**  
+- **Breadboard and jumper wires**  
+- **Logic Analyzer** (optional, for debugging I2C traffic)
 
 ## Pin Connections
-| STM32 Pin | SPI Signal | Function                        |
-|-----------|------------|---------------------------------|
-| PA4       | CS         | Chip Select (GPIO controlled)   |
-| PA5       | SCK        | Serial Clock (AF5)              |
-| PA6       | MISO       | Master In Slave Out (AF5)       |
-| PA7       | MOSI       | Master Out Slave In (AF5)       |
+| STM32 Pin | I2C Signal | Function                  |
+|-----------|------------|---------------------------|
+| PB6       | SCL        | I2C1 Serial Clock (AF4)  |
+| PB7       | SDA        | I2C1 Serial Data (AF4)   |
 
 ## What You'll Learn
-1. How to read from an SPI sensor using bare-metal code  
-2. How to interpret an ICM-20948 datasheet for register access  
-3. How to send the READ_BIT (0x80) before the register address  
-4. How to verify device connection using WHO_AM_I (0xEA)  
-5. How to debug SPI transactions with a logic analyzer  
-6. How to extend a generic SPI driver for a specific peripheral  
-7. How to handle CS assertion/deassertion timing for reads
+1. How to initialize I2C1 without HAL  
+2. How STM32 handles 7-bit slave addressing  
+3. How to detect ACK and NACK responses  
+4. How START and STOP conditions are generated  
+5. How to configure open-drain GPIO for I2C  
+6. How pull-up resistors affect I2C communication  
+7. How to validate I2C communication with SSD1306
 
 ## Code Structure
-- `spi.h` – Function prototypes and register definitions  
-- `spi.c` – SPI driver implementation (init, tx/rx)  
-- `main.c` – ICM-20948 WHO_AM_I read and verification loop
+- `i2c.h` – Function prototypes and interface definitions  
+- `i2c.c` – I2C driver implementation  
+- `main.c` – SSD1306 address ACK verification loop
 
 ## Board
 - STM32 Nucleo L4 series
 
 ## Disclaimer
 This code is for **educational purposes only**.  
-SPI communication involves direct register manipulation which may cause **unexpected peripheral behavior if misconfigured**.  
-Always verify timing constraints with a logic analyzer before connecting to sensitive SPI devices.  
-The code may contain bugs or simplifications and is **not intended for production or safety-critical applications**.
+I2C communication involves direct register manipulation which may cause **unexpected peripheral behavior if misconfigured**.  
+Always verify wiring, pull-up resistors, and voltage compatibility before connecting external peripherals.  
+The code may contain bugs or simplifications and is **not intended for production or safety-critical applications**.  
+Equip Embedded bears no responsibility for hardware damage, data loss, or other issues resulting from the use or misuse of this code.

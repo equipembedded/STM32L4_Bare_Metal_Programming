@@ -51,75 +51,54 @@ static void delay_ms(uint32_t ms)
     }
 }
 
+#include "device_headers/stm32l432xx.h"
+#include "device_drivers/gpio.h"
+#include "device_drivers/i2c.h"
+
+volatile uint8_t TAR_ADDR = 0x3C;
+volatile uint32_t ACK_NUM;
+volatile uint32_t NACK_NUM;
+
 
 int main(void)
 {
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;           // Enable GPIOA clock
 
-	RCC->APB2ENR |=  RCC_APB2ENR_SPI1EN;           // Enable SPI1 clock
+	// Turn on the clock for GPIOA
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 
-	// CS
-	GPIO_Init(GPIOA, GPIO_PIN_4, GPIO_MODE_OUTPUT, // Configure CS pin as output
-			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_UP);
+	// Enable I2C clock
+	RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
 
-	// CLK
-	GPIO_Init(GPIOA, GPIO_PIN_5, GPIO_MODE_ALTERNATE, // Configure SCK as alternate function
-			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
+	// I2C1_SCL PIN
+	GPIO_Init(GPIOB, GPIO_PIN_6, GPIO_MODE_ALTERNATE,
+			GPIO_OTYPE_OPENDRAIN, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
 
-	// SDI
-	GPIO_Init(GPIOA, GPIO_PIN_6, GPIO_MODE_ALTERNATE, // Configure MISO as alternate function
-			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
-
-	// SDO
-	GPIO_Init(GPIOA, GPIO_PIN_7, GPIO_MODE_ALTERNATE, // Configure MOSI as alternate function
-			GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
+	// I2C1_SDA PIN
+	GPIO_Init(GPIOB, GPIO_PIN_7, GPIO_MODE_ALTERNATE,
+			GPIO_OTYPE_OPENDRAIN, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
 
 
+	// ALT_FUNC SCL
+	SelectAltFunction(GPIOB, GPIO_PIN_6, AF4);
 
-	// CLK ALT FUNC
-	SelectAltFunction(GPIOA, GPIO_PIN_5, AF5);     // Set SCK to AF5 (SPI1)
+	// ALT_FUNC SDA
+	SelectAltFunction(GPIOB, GPIO_PIN_7, AF4);
 
-	// SDI ALT FUNC
-	SelectAltFunction(GPIOA, GPIO_PIN_6, AF5);     // Set MISO to AF5 (SPI1)
 
-	// SDO ALT FUNC
-	SelectAltFunction(GPIOA, GPIO_PIN_7, AF5);     // Set MOSI to AF5 (SPI1)
-
-	spi_init();                                    // Initialize SPI1 peripheral
-
-	spi_en();                                      // Enable SPI1
-
-	volatile uint8_t x = 0;
-	volatile int8_t try = 1;
+	i2c_init();
 
 	while(1) {
-	    uint8_t whoami = 0;
+		volatile uint8_t ack = i2c_check_addr(TAR_ADDR);
 
-	    // CS LOW
-	    GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_LOW);   // Assert chip select
-
-	    // Send address: READ_BIT (0x80) | register address 0x00 (WHO_AM_I)
-	    spi_tx_8bit(0x80 | 0x00);
-
-	    // Send dummy byte to clock in response, store received WHO_AM_I value
-	    whoami = spi_tx_8bit(0x00);
-
-	    // Wait for hardware to finish all SPI activity
-	    while(SPI1->SR & SPI_SR_BSY);
-
-	    // CS HIGH
-	    GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_HIGH);  // Deassert chip select
-
-	    // Expected WHO_AM_I for ICM-20948 is 0xEA
-	    if (whoami != 0xEA) {
-	        // Error: wrong device ID - decrement try until zero (infinite loop)
-	        while(try > 0) {
-	            try--;
-	        }
+	    if (ack) { // SSD1306 common 7-bit addr
+	    	// ACK received → device is present
+	    	ACK_NUM++;
 	    } else {
-	        // Success: increment counter
-	        x++;
-	    }
+			// no ACK → wiring/address issue
+	    	NACK_NUM++;
+		}
+
+	    delay_ms(100); // Small delay
 	}
 
 }
