@@ -1,57 +1,65 @@
 All code written by Equip Embedded in this repository is licensed under the MIT License.
 STM32CubeIDE-generated files (startup, .ld, HAL drivers) remain under STMicroelectronics copyright.
 
-# STM32 Nucleo Bare-Metal Series — SSD1306 I2C Interface
+# STM32 Nucleo Bare-Metal Series — SSD1306 OLED Driver
 
-This repository contains **bare-metal STM32L4 code** demonstrating how to **interface an SSD1306 OLED display** over I2C.  
-No HAL is used — only CMSIS device headers and memory-mapped registers.
+This repository contains **bare-metal STM32L4 code** demonstrating how to interface an **SSD1306 OLED display** over I2C using direct register access.  
+No HAL is used — only CMSIS device headers and memory-mapped peripheral registers.
 
-## Lesson: SSD1306 I2C Interface
-In this lesson, we build a minimal **bare-metal I2C driver** for STM32L432 and verify communication with an SSD1306 OLED display using address ACK detection.
+## Lesson: SSD1306 OLED Initialization over I2C
+
+In this lesson, we build a minimal **bare-metal SSD1306 driver** for the STM32L432 and initialize the OLED display by transmitting commands over I2C.
 
 ## Key Concepts Covered
-- **I2C Standard Mode**: 100kHz bus configuration  
-- **I2C Peripheral Initialization**: TIMINGR configuration and PE control  
-- **7-bit Addressing**: STM32 hardware-managed address phase  
-- **ACK/NACK Detection**: Verifying slave response through ISR flags  
-- **START and STOP Generation**: Basic I2C transaction control  
-- **Open-Drain Communication**: Proper SDA/SCL GPIO configuration  
-- **Bare-Metal I2C Communication**: Direct register manipulation without HAL
+
+- **Bare-Metal I2C Communication**: Direct peripheral register access without HAL  
+- **SSD1306 Command Interface**: Sending initialization commands over I2C  
+- **START and STOP Generation**: STM32 hardware-controlled I2C transactions  
+- **AUTOEND Mode**: Automatic STOP generation after transfer completion  
+- **I2C TX Flow**: Monitoring TXIS and STOPF status flags  
+- **Horizontal Addressing Mode**: SSD1306 memory configuration  
+- **OLED Initialization Sequence**: Configuring contrast, scan direction, and charge pump
 
 ## Features
-- `i2c_init()` – Configure I2C1 for 100kHz standard mode  
-- `i2c_check_addr(uint8_t addr)` – Verify slave ACK response  
-- Automatic START and STOP generation  
-- Direct register manipulation of I2C1 peripheral  
-- Minimal bare-metal I2C implementation
+
+- `i2c_write()` – Send SSD1306 command or data bytes over I2C  
+- `ssd1306_cmd()` – Send a single command byte to the display  
+- `ssd1306_init()` – Initialize SSD1306 OLED controller  
+- Direct manipulation of STM32 I2C1 peripheral registers  
+- Minimal SSD1306 bare-metal driver implementation
 
 ## Hardware Components
-- **STM32 Nucleo-STM32L432**  
-- **SSD1306 OLED Display**  
+
+- **STM32 Nucleo-STM32L432KC**  
+- **SSD1306 OLED Display (I2C)**  
 - **Breadboard and jumper wires**  
 - **Logic Analyzer** (optional, for debugging I2C traffic)
 
 ## Pin Connections
+
 | STM32 Pin | I2C Signal | Function                  |
 |-----------|------------|---------------------------|
 | PB6       | SCL        | I2C1 Serial Clock (AF4)  |
 | PB7       | SDA        | I2C1 Serial Data (AF4)   |
 
 ## What You'll Learn
-1. How to initialize I2C1 without HAL  
-2. How STM32 handles 7-bit slave addressing  
-3. How to detect ACK and NACK responses  
-4. How START and STOP conditions are generated  
-5. How to configure open-drain GPIO for I2C  
-6. How pull-up resistors affect I2C communication  
-7. How to validate I2C communication with SSD1306
+
+1. How to send I2C transactions without HAL  
+2. How SSD1306 command transfers work  
+3. How STM32 handles I2C byte transmission  
+4. How to configure SSD1306 display settings  
+5. How TXIS and STOPF flags control data flow  
+6. How horizontal addressing mode works  
+7. How to initialize an OLED display from scratch
 
 ## Code Structure
-- `i2c.h` – Function prototypes and interface definitions  
-- `i2c.c` – I2C driver implementation  
-- `main.c` – SSD1306 address ACK verification loop
+
+- `ssd1306.h` – SSD1306 macros and function declarations  
+- `ssd1306.c` – SSD1306 driver implementation  
+- `main.c` – OLED initialization example
 
 ## Board
+
 - STM32 Nucleo L4 series
 
 ## Disclaimer

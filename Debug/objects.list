@@ -1,6 +1,7 @@
 "./Src/device_drivers/gpio.o"
 "./Src/device_drivers/i2c.o"
 "./Src/device_drivers/spi.o"
+"./Src/device_drivers/ssd1306.o"
 "./Src/device_drivers/timers.o"
 "./Src/main.o"
 "./Src/syscalls.o"

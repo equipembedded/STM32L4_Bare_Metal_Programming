@@ -1,15 +1,13 @@
 /**
   ******************************************************************************
-  * @file    main.c
+  * @file    ssd1306.h
   * @author  Equip Embedded
-  * @brief   Bare-metal STM32 register example.
+  * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
   *          This file may contain:
-  *           - Data structures and address mapping for peripherals
-  *           - Register declarations and bit definitions
-  *           - Macros to access hardware registers
-  *           - Function calls
+  *           - SSD1306 OLED driver macros
+  *           - SSD1306 function declarations
   *
   ******************************************************************************
   * MIT License
@@ -36,58 +34,20 @@
   ******************************************************************************
   */
 
-#include "device_drivers/gpio.h"
-#include "device_drivers/spi.h"
+#ifndef DEVICE_DRIVERS_SSD1306_H_
+#define DEVICE_DRIVERS_SSD1306_H_
 
 
-static void delay_ms(uint32_t ms)
-{
-    while (ms--)                      // Loop for each millisecond
-    {
-        for (uint32_t i = 0; i < 1000; i++)  // 1000 iterations per ms
-        {
-            __asm volatile ("nop");   // Do nothing for 1 cycle
-        }
-    }
-}
-
+#include <stdint.h>
 #include "device_headers/stm32l432xx.h"
-#include "device_drivers/gpio.h"
-#include "device_drivers/i2c.h"
-#include "device_drivers/ssd1306.h"
 
-volatile uint8_t TAR_ADDR = 0x3C;
-volatile uint32_t ACK_NUM;
-volatile uint32_t NACK_NUM;
+#define SSD1306_ADDR 0x3C
+#define SSD1306_CMD  0x00
+#define SSD1306_DATA 0x40
 
-
-int main(void)
-{
-
-	// Turn on the clock for GPIOA
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-
-	// Enable I2C clock
-	RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
-
-	// I2C1_SCL PIN
-	GPIO_Init(GPIOB, GPIO_PIN_6, GPIO_MODE_ALTERNATE,
-			GPIO_OTYPE_OPENDRAIN, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
-
-	// I2C1_SDA PIN
-	GPIO_Init(GPIOB, GPIO_PIN_7, GPIO_MODE_ALTERNATE,
-			GPIO_OTYPE_OPENDRAIN, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
+void i2c_write(uint8_t addr, uint8_t control_byte, uint8_t data);
+void ssd1306_cmd(uint8_t cmd);
+void ssd1306_init(void);
 
 
-	// ALT_FUNC SCL
-	SelectAltFunction(GPIOB, GPIO_PIN_6, AF4);
-
-	// ALT_FUNC SDA
-	SelectAltFunction(GPIOB, GPIO_PIN_7, AF4);
-
-
-	i2c_init();
-
-	ssd1306_init();
-
-}
+#endif /* DEVICE_DRIVERS_SSD1306_H_ */
