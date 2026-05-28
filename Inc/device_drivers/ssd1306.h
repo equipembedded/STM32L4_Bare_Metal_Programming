@@ -47,6 +47,7 @@
 
 void i2c_write(uint8_t addr, uint8_t control_byte, uint8_t data);
 void ssd1306_cmd(uint8_t cmd);
+void ssd1306_data(uint8_t data);
 void ssd1306_init(void);
 
 

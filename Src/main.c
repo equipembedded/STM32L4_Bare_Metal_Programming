@@ -63,31 +63,66 @@ volatile uint32_t NACK_NUM;
 
 int main(void)
 {
+    // Enable GPIOB peripheral clock
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
 
-	// Turn on the clock for GPIOA
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+    // Enable I2C1 peripheral clock
+    RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
 
-	// Enable I2C clock
-	RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
+    // Configure PB6 as I2C1 SCL
+    GPIO_Init(GPIOB, GPIO_PIN_6, GPIO_MODE_ALTERNATE,
+            GPIO_OTYPE_OPENDRAIN, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
 
-	// I2C1_SCL PIN
-	GPIO_Init(GPIOB, GPIO_PIN_6, GPIO_MODE_ALTERNATE,
-			GPIO_OTYPE_OPENDRAIN, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
+    // Configure PB7 as I2C1 SDA
+    GPIO_Init(GPIOB, GPIO_PIN_7, GPIO_MODE_ALTERNATE,
+            GPIO_OTYPE_OPENDRAIN, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
 
-	// I2C1_SDA PIN
-	GPIO_Init(GPIOB, GPIO_PIN_7, GPIO_MODE_ALTERNATE,
-			GPIO_OTYPE_OPENDRAIN, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
+    // Select alternate function AF4 for SCL
+    SelectAltFunction(GPIOB, GPIO_PIN_6, AF4);
 
+    // Select alternate function AF4 for SDA
+    SelectAltFunction(GPIOB, GPIO_PIN_7, AF4);
 
-	// ALT_FUNC SCL
-	SelectAltFunction(GPIOB, GPIO_PIN_6, AF4);
+    // Initialize STM32 I2C peripheral
+    i2c_init();
 
-	// ALT_FUNC SDA
-	SelectAltFunction(GPIOB, GPIO_PIN_7, AF4);
+    // Initialize SSD1306 display
+    ssd1306_init();
 
+    // Set full column address range
+    ssd1306_cmd(0x21);
+    ssd1306_cmd(0);
+    ssd1306_cmd(127);
 
-	i2c_init();
+    // Set full page address range
+    ssd1306_cmd(0x22);
+    ssd1306_cmd(0);
+    ssd1306_cmd(7);
 
-	ssd1306_init();
+    // Clear entire display GDDRAM
+    for (uint16_t i = 0; i < 1024; i++)
+    {
+        i2c_write(0x3C, 0x40, 0x00);
+    }
 
+    // Select drawing window: right half of display
+    ssd1306_cmd(0x21);
+    ssd1306_cmd(63);
+    ssd1306_cmd(127);
+
+    // Select drawing window: lower display pages
+    ssd1306_cmd(0x22);
+    ssd1306_cmd(4);
+    ssd1306_cmd(7);
+
+    // Write raw bitmap data for letter A
+    ssd1306_data(0x80);
+    ssd1306_data(0x60);
+    ssd1306_data(0x18);
+    ssd1306_data(0x16);
+    ssd1306_data(0x11);
+    ssd1306_data(0x16);
+    ssd1306_data(0x18);
+    ssd1306_data(0x20);
+    ssd1306_data(0xC0);
 }

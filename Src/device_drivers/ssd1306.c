@@ -75,6 +75,12 @@ void ssd1306_cmd(uint8_t cmd) {
 	i2c_write(SSD1306_ADDR, SSD1306_CMD, cmd);
 }
 
+void ssd1306_data(uint8_t data) {
+
+    /* Send data byte to SSD1306 */
+	i2c_write(SSD1306_ADDR, SSD1306_DATA, data);
+}
+
 void ssd1306_init() {
 
     /* Turn display off during configuration */
