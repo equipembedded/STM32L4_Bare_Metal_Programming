@@ -36,6 +36,125 @@
 
 
 #include "device_drivers/ssd1306.h"
+#include <stdlib.h>
+
+uint8_t ssd1306_buffer[128*8];
+
+static const uint8_t font5x7_letters[26][5] = {
+
+    // A
+    {0x7C, 0x12, 0x11, 0x12, 0x7C},
+
+    // B
+    {0x7F, 0x49, 0x49, 0x49, 0x36},
+
+    // C
+    {0x3E, 0x41, 0x41, 0x41, 0x22},
+
+    // D
+    {0x7F, 0x41, 0x41, 0x22, 0x1C},
+
+    // E
+    {0x7F, 0x49, 0x49, 0x49, 0x41},
+
+    // F
+    {0x7F, 0x09, 0x09, 0x09, 0x01},
+
+    // G
+    {0x3E, 0x41, 0x49, 0x49, 0x7A},
+
+    // H
+    {0x7F, 0x08, 0x08, 0x08, 0x7F},
+
+    // I
+    {0x00, 0x41, 0x7F, 0x41, 0x00},
+
+    // J
+    {0x20, 0x40, 0x41, 0x3F, 0x01},
+
+    // K
+    {0x7F, 0x08, 0x14, 0x22, 0x41},
+
+    // L
+    {0x7F, 0x40, 0x40, 0x40, 0x40},
+
+    // M
+    {0x7F, 0x02, 0x04, 0x02, 0x7F},
+
+    // N
+    {0x7F, 0x04, 0x08, 0x10, 0x7F},
+
+    // O
+    {0x3E, 0x41, 0x41, 0x41, 0x3E},
+
+    // P
+    {0x7F, 0x09, 0x09, 0x09, 0x06},
+
+    // Q
+    {0x3E, 0x41, 0x51, 0x21, 0x5E},
+
+    // R
+    {0x7F, 0x09, 0x19, 0x29, 0x46},
+
+    // S
+    {0x46, 0x49, 0x49, 0x49, 0x31},
+
+    // T
+    {0x01, 0x01, 0x7F, 0x01, 0x01},
+
+    // U
+    {0x3F, 0x40, 0x40, 0x40, 0x3F},
+
+    // V
+    {0x1F, 0x20, 0x40, 0x20, 0x1F},
+
+    // W
+    {0x7F, 0x20, 0x18, 0x20, 0x7F},
+
+    // X
+    {0x63, 0x14, 0x08, 0x14, 0x63},
+
+    // Y
+    {0x03, 0x04, 0x78, 0x04, 0x03},
+
+    // Z
+    {0x61, 0x51, 0x49, 0x45, 0x43}
+};
+
+static const uint8_t font5x7_numbers[10][5] = {
+
+    // 0
+    {0x3E, 0x51, 0x49, 0x45, 0x3E},
+
+    // 1
+    {0x00, 0x42, 0x7F, 0x40, 0x00},
+
+    // 2
+    {0x62, 0x51, 0x49, 0x49, 0x46},
+
+    // 3
+    {0x22, 0x41, 0x49, 0x49, 0x36},
+
+    // 4
+    {0x18, 0x14, 0x12, 0x7F, 0x10},
+
+    // 5
+    {0x2F, 0x49, 0x49, 0x49, 0x31},
+
+    // 6
+    {0x3E, 0x49, 0x49, 0x49, 0x32},
+
+    // 7
+    {0x01, 0x71, 0x09, 0x05, 0x03},
+
+    // 8
+    {0x36, 0x49, 0x49, 0x49, 0x36},
+
+    // 9
+    {0x26, 0x49, 0x49, 0x49, 0x3E}
+};
+
+
 
 void i2c_write(uint8_t addr, uint8_t control_byte, uint8_t data) {
 
@@ -133,4 +252,150 @@ void ssd1306_init() {
 
     /* Turn display on */
     ssd1306_cmd(0xAF);
+}
+
+void ssd1306_clear() {
+    // Set full column address range
+    ssd1306_cmd(0x21);
+    ssd1306_cmd(0);
+    ssd1306_cmd(127);
+
+    // Set full page address range
+    ssd1306_cmd(0x22);
+    ssd1306_cmd(0);
+    ssd1306_cmd(7);
+
+    // Clear entire display GDDRAM
+    for (int i = 0; i < 1024; i++)
+    {
+        i2c_write(0x3C, 0x40, 0x00);
+    }
+}
+
+// Clears the entire display buffer by setting all pixels to OFF.
+void ssd1306_clear_buffer(void)
+{
+    for (int i = 0; i < 1024; i++)
+        ssd1306_buffer[i] = 0;
+}
+
+// Sends the contents of the display buffer to the SSD1306.
+void ssd1306_update(){
+    for (int i = 0; i < 1024; i++)
+        ssd1306_data(ssd1306_buffer[i]);
+}
+
+// Draws a single pixel at the specified (x, y) coordinate.
+void ssd1306_draw_pixel(int x, int y) {
+	 if (x < 0 || x > 127 || y < 0 || y > 63)
+		 return;
+
+	 uint16_t index = (uint16_t)(x + ((y / 8) * 128));
+	 uint8_t bit = (uint8_t)(1U << (y % 8));
+
+	 ssd1306_buffer[index] |= bit;
+}
+
+// Draws a line between two points using Bresenham's line algorithm.
+void ssd1306_draw_line(int x0, int y0, int x1, int y1)
+{
+    int dx = abs(x1 - x0);
+    int dy = -abs(y1 - y0);
+    int sx = (x0 < x1) ? 1 : -1;
+    int sy = (y0 < y1) ? 1 : -1;
+    int err = dx + dy;
+
+    while (1)
+    {
+        ssd1306_draw_pixel(x0, y0);
+
+        if (x0 == x1 && y0 == y1) break;
+
+        int e2 = 2 * err;
+        if (e2 >= dy) { err += dy; x0 += sx; }
+        if (e2 <= dx) { err += dx; y0 += sy; }
+    }
+}
+
+// Draws the outline of a rectangle.
+void ssd1306_draw_rect(int x, int y, int w, int h)
+{
+	// Top + bottom
+	for (int i = 0; i < w; i++) {
+		ssd1306_draw_pixel(x + i, y);			// top
+		ssd1306_draw_pixel(x + i, y + h - 1);	// bottom
+	}
+
+	// Left + right
+	for (int i = 0; i < h; i++) {
+		ssd1306_draw_pixel(x, y + i);			// left
+		ssd1306_draw_pixel(x + w - 1, y + i);	// right
+	}
+}
+
+// Draws the outline of a circle centered at (cx, cy).
+void ssd1306_draw_circle(int cx, int cy, int r)
+{
+    for (int x = -r; x <= r; x++)
+    {
+        for (int y = -r; y <= r; y++)
+        {
+            int d = x*x + y*y;
+
+            if (d >= (r*r - r) && d <= (r*r + r))
+            {
+                ssd1306_draw_pixel(cx + x, cy + y);
+            }
+        }
+    }
+}
+
+// Draws a single 5x7 character.
+void ssd1306_draw_char(int x, int y, char c)
+{
+    const uint8_t *font = 0;
+
+    if (c >= 'A' && c <= 'Z')
+    {
+        font = font5x7_letters[c - 'A'];
+    }
+    else if (c >= '0' && c <= '9')
+    {
+        font = font5x7_numbers[c - '0'];
+    }
+    else
+    {
+        return;
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        uint8_t col = font[i];
+
+        for (int j = 0; j < 7; j++)
+        {
+            if (col & (1 << j))
+            {
+                ssd1306_draw_pixel(x + i, y + j);
+            }
+        }
+    }
+}
+
+// Prints a null-terminated string to the display.
+void ssd1306_print(int x, int y, const char *str)
+{
+    int cursor = x;
+
+    while (*str)
+    {
+        if ((*str >= 'A' && *str <= 'Z') ||
+            (*str >= '0' && *str <= '9'))
+        {
+            ssd1306_draw_char(cursor, y, *str);
+        }
+
+        cursor += 6; // 5 pixels + spacing
+        str++;
+    }
 }

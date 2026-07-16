@@ -89,40 +89,34 @@ int main(void)
     // Initialize SSD1306 display
     ssd1306_init();
 
-    // Set full column address range
-    ssd1306_cmd(0x21);
-    ssd1306_cmd(0);
-    ssd1306_cmd(127);
+    // Clear the SSD1306 display.
+    ssd1306_clear();
 
-    // Set full page address range
-    ssd1306_cmd(0x22);
-    ssd1306_cmd(0);
-    ssd1306_cmd(7);
+    // Clear the local display buffer.
+    ssd1306_clear_buffer();
 
-    // Clear entire display GDDRAM
-    for (uint16_t i = 0; i < 1024; i++)
-    {
-        i2c_write(0x3C, 0x40, 0x00);
-    }
+    // Send the cleared buffer to the display.
+    ssd1306_update();
 
-    // Select drawing window: right half of display
-    ssd1306_cmd(0x21);
-    ssd1306_cmd(63);
-    ssd1306_cmd(127);
+    // Draw two individual pixels.
+    ssd1306_draw_pixel(32, 16);
+    ssd1306_draw_pixel(90, 16);
 
-    // Select drawing window: lower display pages
-    ssd1306_cmd(0x22);
-    ssd1306_cmd(4);
-    ssd1306_cmd(7);
+    // Draw a diagonal line across the display.
+	ssd1306_draw_line(0, 0, 127, 63);
 
-    // Write raw bitmap data for letter A
-    ssd1306_data(0x80);
-    ssd1306_data(0x60);
-    ssd1306_data(0x18);
-    ssd1306_data(0x16);
-    ssd1306_data(0x11);
-    ssd1306_data(0x16);
-    ssd1306_data(0x18);
-    ssd1306_data(0x20);
-    ssd1306_data(0xC0);
+    // Draw a rectangle.
+	ssd1306_draw_rect(16, 5, 100, 50);
+
+    // Draw a circle in the center of the display.
+	ssd1306_draw_circle(64, 32, 20);
+
+    // Print text and numbers.
+	ssd1306_print(26, 24, "EQUIP");
+	ssd1306_print(62, 24, "EMBEDDED");
+	ssd1306_print(0, 63-8, "123");
+
+    // Update the display with all drawings.
+    ssd1306_update();
+
 }
