@@ -1,15 +1,13 @@
 /**
   ******************************************************************************
-  * @file    main.c
+  * @file    clocks.c
   * @author  Equip Embedded
-  * @brief   Bare-metal STM32 register example.
+  * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
-  *          This file may contain:
-  *           - Data structures and address mapping for peripherals
-  *           - Register declarations and bit definitions
-  *           - Macros to access hardware registers
-  *           - Function calls
+  *          This file contains:
+  *           - RCC and PLL initialization functions.
+  *           - System clock configuration routines.
   *
   ******************************************************************************
   * MIT License
@@ -36,55 +34,50 @@
   ******************************************************************************
   */
 
-#include "device_drivers/gpio.h"
-#include "device_drivers/spi.h"
-
-
-static void delay_ms(uint32_t ms)
-{
-    while (ms--)                      // Loop for each millisecond
-    {
-        for (uint32_t i = 0; i < 1000; i++)  // 1000 iterations per ms
-        {
-            __asm volatile ("nop");   // Do nothing for 1 cycle
-        }
-    }
-}
-
-#include "device_headers/stm32l432xx.h"
-#include "device_drivers/gpio.h"
 #include "device_drivers/clocks.h"
 
+// Configure the system clock to 80 MHz using the PLL.
+void rcc_pll80mhz_init(void){
 
+	// Enable the internal high-speed oscillator (HSI16).
+	RCC->CR |= RCC_CR_HSION;
 
-int main(void)
-{
-	// Configure the system clock to 80 MHz.
-	rcc_pll80mhz_init();
+	// Wait until HSI is ready.
+	while (!(RCC->CR & RCC_CR_HSIRDY));
 
-	// Enable the clock for GPIOA.
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+	// Configure Flash memory for 4 wait states.
+	FLASH->ACR &= ~FLASH_ACR_LATENCY;
+	FLASH->ACR |= FLASH_ACR_LATENCY_4WS;
 
-	// Configure PA8 as an alternate function pin.
-	GPIO_Init(GPIOA,
-			GPIO_PIN_8,
-			GPIO_MODE_ALTERNATE,
-			GPIO_OTYPE_PUSHPULL,
-			GPIO_OUTPUT_SPEED_HIGH,
-			GPIO_PULL_NONE);
+	// Disable the PLL before reconfiguring it.
+	RCC->CR &= ~RCC_CR_PLLON;
 
-	// Select Alternate Function 0 (MCO) for PA8.
-	SelectAltFunction(GPIOA, GPIO_PIN_8, AF0);
+	// Wait until the PLL is fully disabled.
+	while (RCC->CR & RCC_CR_PLLRDY);
 
-	// Clear the MCO source and prescaler bits.
-    RCC->CFGR &= ~(RCC_CFGR_MCOSEL | RCC_CFGR_MCOPRE);
+	// Configure the PLL.
+	// Source = HSI16
+	// M = 1
+	// N = 10
+	// R = 2
+	// PLL output enabled
+	RCC->PLLCFGR =
+		RCC_PLLCFGR_PLLSRC_HSI
+	|	(0 << RCC_PLLCFGR_PLLM_Pos)
+	|	(10 << RCC_PLLCFGR_PLLN_Pos)
+	|	(0 << RCC_PLLCFGR_PLLR_Pos)
+	|	RCC_PLLCFGR_PLLREN;
 
-    // Select SYSCLK as the MCO output source.
-    RCC->CFGR |= RCC_CFGR_MCOSEL_0;
+	// Enable the PLL.
+	RCC->CR |= RCC_CR_PLLON;
 
-    // Divide the MCO output clock by 16.
-    RCC->CFGR |= (RCC_CFGR_MCOPRE_2);
+	// Wait until the PLL is locked and ready.
+	while (!(RCC->CR & RCC_CR_PLLRDY));
 
-    // Keep the program running.
-    while(1);
+	// Select the PLL as the system clock.
+	RCC->CFGR &= ~RCC_CFGR_SW;
+	RCC->CFGR |= RCC_CFGR_SW_PLL;
+
+	// Wait until the PLL is being used as the system clock.
+	while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
 }

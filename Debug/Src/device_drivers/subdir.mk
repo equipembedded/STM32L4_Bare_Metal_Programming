@@ -5,6 +5,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Src/device_drivers/clocks.c \
 ../Src/device_drivers/gpio.c \
 ../Src/device_drivers/i2c.c \
 ../Src/device_drivers/spi.c \
@@ -12,6 +13,7 @@ C_SRCS += \
 ../Src/device_drivers/timers.c 
 
 OBJS += \
+./Src/device_drivers/clocks.o \
 ./Src/device_drivers/gpio.o \
 ./Src/device_drivers/i2c.o \
 ./Src/device_drivers/spi.o \
@@ -19,6 +21,7 @@ OBJS += \
 ./Src/device_drivers/timers.o 
 
 C_DEPS += \
+./Src/device_drivers/clocks.d \
 ./Src/device_drivers/gpio.d \
 ./Src/device_drivers/i2c.d \
 ./Src/device_drivers/spi.d \
@@ -33,7 +36,7 @@ Src/device_drivers/%.o Src/device_drivers/%.su Src/device_drivers/%.cyclo: ../Sr
 clean: clean-Src-2f-device_drivers
 
 clean-Src-2f-device_drivers:
-	-$(RM) ./Src/device_drivers/gpio.cyclo ./Src/device_drivers/gpio.d ./Src/device_drivers/gpio.o ./Src/device_drivers/gpio.su ./Src/device_drivers/i2c.cyclo ./Src/device_drivers/i2c.d ./Src/device_drivers/i2c.o ./Src/device_drivers/i2c.su ./Src/device_drivers/spi.cyclo ./Src/device_drivers/spi.d ./Src/device_drivers/spi.o ./Src/device_drivers/spi.su ./Src/device_drivers/ssd1306.cyclo ./Src/device_drivers/ssd1306.d ./Src/device_drivers/ssd1306.o ./Src/device_drivers/ssd1306.su ./Src/device_drivers/timers.cyclo ./Src/device_drivers/timers.d ./Src/device_drivers/timers.o ./Src/device_drivers/timers.su
+	-$(RM) ./Src/device_drivers/clocks.cyclo ./Src/device_drivers/clocks.d ./Src/device_drivers/clocks.o ./Src/device_drivers/clocks.su ./Src/device_drivers/gpio.cyclo ./Src/device_drivers/gpio.d ./Src/device_drivers/gpio.o ./Src/device_drivers/gpio.su ./Src/device_drivers/i2c.cyclo ./Src/device_drivers/i2c.d ./Src/device_drivers/i2c.o ./Src/device_drivers/i2c.su ./Src/device_drivers/spi.cyclo ./Src/device_drivers/spi.d ./Src/device_drivers/spi.o ./Src/device_drivers/spi.su ./Src/device_drivers/ssd1306.cyclo ./Src/device_drivers/ssd1306.d ./Src/device_drivers/ssd1306.o ./Src/device_drivers/ssd1306.su ./Src/device_drivers/timers.cyclo ./Src/device_drivers/timers.d ./Src/device_drivers/timers.o ./Src/device_drivers/timers.su
 
 .PHONY: clean-Src-2f-device_drivers
 

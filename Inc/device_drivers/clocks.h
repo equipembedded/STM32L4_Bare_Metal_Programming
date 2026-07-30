@@ -1,15 +1,12 @@
 /**
   ******************************************************************************
-  * @file    main.c
+  * @file    clocks.h
   * @author  Equip Embedded
-  * @brief   Bare-metal STM32 register example.
+  * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
-  *          This file may contain:
-  *           - Data structures and address mapping for peripherals
-  *           - Register declarations and bit definitions
-  *           - Macros to access hardware registers
-  *           - Function calls
+  *          This file contains:
+  *           - Function prototypes for RCC and PLL clock initialization.
   *
   ******************************************************************************
   * MIT License
@@ -36,55 +33,13 @@
   ******************************************************************************
   */
 
-#include "device_drivers/gpio.h"
-#include "device_drivers/spi.h"
+#ifndef DEVICE_DRIVERS_CLOCKS_H_
+#define DEVICE_DRIVERS_CLOCKS_H_
 
-
-static void delay_ms(uint32_t ms)
-{
-    while (ms--)                      // Loop for each millisecond
-    {
-        for (uint32_t i = 0; i < 1000; i++)  // 1000 iterations per ms
-        {
-            __asm volatile ("nop");   // Do nothing for 1 cycle
-        }
-    }
-}
-
+#include <stdint.h>
 #include "device_headers/stm32l432xx.h"
-#include "device_drivers/gpio.h"
-#include "device_drivers/clocks.h"
 
+// Configures the system clock to 80 MHz using the PLL.
+void rcc_pll80mhz_init(void);
 
-
-int main(void)
-{
-	// Configure the system clock to 80 MHz.
-	rcc_pll80mhz_init();
-
-	// Enable the clock for GPIOA.
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
-
-	// Configure PA8 as an alternate function pin.
-	GPIO_Init(GPIOA,
-			GPIO_PIN_8,
-			GPIO_MODE_ALTERNATE,
-			GPIO_OTYPE_PUSHPULL,
-			GPIO_OUTPUT_SPEED_HIGH,
-			GPIO_PULL_NONE);
-
-	// Select Alternate Function 0 (MCO) for PA8.
-	SelectAltFunction(GPIOA, GPIO_PIN_8, AF0);
-
-	// Clear the MCO source and prescaler bits.
-    RCC->CFGR &= ~(RCC_CFGR_MCOSEL | RCC_CFGR_MCOPRE);
-
-    // Select SYSCLK as the MCO output source.
-    RCC->CFGR |= RCC_CFGR_MCOSEL_0;
-
-    // Divide the MCO output clock by 16.
-    RCC->CFGR |= (RCC_CFGR_MCOPRE_2);
-
-    // Keep the program running.
-    while(1);
-}
+#endif /* DEVICE_DRIVERS_CLOCKS_H_ */
