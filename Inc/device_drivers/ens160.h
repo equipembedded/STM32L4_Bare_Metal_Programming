@@ -1,14 +1,14 @@
 /**
   ******************************************************************************
-  * @file    i2c.c
+  * @file    ens160.h
   * @author  Equip Embedded
-  * @brief   Hardware peripheral interface definitions and macros.
+  * @brief   ENS160 air quality sensor driver definitions.
   * @note    This copyright applies only to this file.
   *
-  *          This file may contain:
-  *           - I2C1 hardware initialization for standard mode operation
-  *           - 7-bit slave address ACK detection function
-  *           - Basic I2C START and AUTOEND transaction control
+  *          This file contains:
+  *           - ENS160 register definitions and configuration macros
+  *           - ENS160 I2C device address definitions
+  *           - Function prototypes for sensor communication
   *
   ******************************************************************************
   * MIT License
@@ -35,43 +35,18 @@
   ******************************************************************************
   */
 
-#include "device_drivers/i2c.h"
+#ifndef DEVICE_DRIVERS_ENS160_H_
+#define DEVICE_DRIVERS_ENS160_H_
 
-void i2c_init(void)
-{
-    /* Disable I2C */
-    I2C1->CR1 &= ~I2C_CR1_PE;
+#include <stdint.h>
+#include "device_headers/stm32l432xx.h"
 
-    /* 100kHz timing for 4MHz I2C clock */
-//    I2C1->TIMINGR = 0x0010061A;
-    I2C1->TIMINGR = 0x10909CEC; // about 100KHz for 80MHz clock
+#define ENS160_ADDR            0x53U
+#define ENS160_STANDARD_MODE   0x02U
+#define ENS160_PART_ID_REG     0x00U
 
-    /* Enable I2C */
-    I2C1->CR1 |= I2C_CR1_PE;
-}
+uint16_t ens160_read_part_id(void);
+void ens160_write(uint8_t reg, uint8_t data);
+uint8_t ens160_read(uint8_t reg);
 
-uint8_t i2c_check_addr(uint8_t addr)
-{
-    /* Clear STOP and NACK flags */
-    I2C1->ICR |= I2C_ICR_STOPCF | I2C_ICR_NACKCF;
-
-    /* Clear CR2 transfer settings */
-    I2C1->CR2 = 0;
-
-    /* Set 7-bit slave address */
-    I2C1->CR2 |= (addr << 1);
-
-    /* Generate STOP automatically */
-    I2C1->CR2 |= I2C_CR2_AUTOEND;
-
-    /* Generate START condition */
-    I2C1->CR2 |= I2C_CR2_START;
-
-    /* Wait for STOP or NACK */
-    while (!(I2C1->ISR & (I2C_ISR_STOPF | I2C_ISR_NACKF)));
-
-    /* Return ACK status */
-    return !(I2C1->ISR & I2C_ISR_NACKF);
-}
-
-
+#endif /* DEVICE_DRIVERS_ENS160_H_ */

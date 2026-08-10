@@ -1,4 +1,5 @@
 "./Src/device_drivers/clocks.o"
+"./Src/device_drivers/ens160.o"
 "./Src/device_drivers/gpio.o"
 "./Src/device_drivers/i2c.o"
 "./Src/device_drivers/spi.o"

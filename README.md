@@ -1,63 +1,90 @@
 All code written by Equip Embedded in this repository is licensed under the MIT License.
 STM32CubeIDE-generated files (startup, linker script, CMSIS device headers, etc.) remain under STMicroelectronics copyright.
 
-# STM32 Nucleo Bare-Metal Series — STM32 Clock Configuration (RCC & PLL)
+# STM32 Nucleo Bare-Metal Series — ENS160 Air Quality Sensor (I²C)
 
-This repository contains **bare-metal STM32L4 code** demonstrating how to configure the **Reset and Clock Control (RCC)** peripheral using direct register access.
+This repository contains **bare-metal STM32L4 code** demonstrating how to interface the **ENS160 Air Quality Sensor** using direct register access.
 
 No HAL is used—only CMSIS device headers and memory-mapped peripheral registers.
 
-## Lesson: Configuring the STM32 System Clock
+## Lesson: Reading the ENS160 Air Quality Sensor
 
-In this lesson, we configure the STM32L432KC to run at **80 MHz** using the internal **HSI16 oscillator** and the **Phase-Locked Loop (PLL)**.
+In this lesson, we communicate with the **ENS160** over the **I²C bus** using bare-metal programming. We write our own I²C driver to read and write sensor registers without relying on vendor libraries.
 
-The project also demonstrates how to output the system clock using the **Microcontroller Clock Output (MCO)** pin, allowing the clock frequency to be verified with an oscilloscope or logic analyzer.
+The project displays **Air Quality Index (AQI)**, **estimated CO₂ (eCO₂)**, and **Total Volatile Organic Compounds (TVOC)** on an SSD1306 OLED display. Three LEDs provide an immediate visual indication of the current air quality.
 
 ## Key Concepts Covered
 
-- **Reset and Clock Control (RCC)**
-- **HSI16 Internal Oscillator**
-- **Phase-Locked Loop (PLL)**
-- **Flash Wait States**
-- **System Clock (SYSCLK)**
-- **PLL Configuration**
-- **Clock Switching**
-- **Microcontroller Clock Output (MCO)**
-- **Verifying the System Clock with an Oscilloscope or Logic Analyzer**
+- Bare-metal I²C communication
+- STM32 I²C peripheral configuration
+- I²C register read and write operations
+- Repeated START conditions
+- ENS160 register map
+- Reading multi-byte sensor data
+- SSD1306 OLED communication over I²C
+- Air Quality Index (AQI)
+- Total Volatile Organic Compounds (TVOC)
+- Equivalent CO₂ (eCO₂)
+- GPIO output control using LEDs
 
 ## Features
 
-- `rcc_pll80mhz_init()` – Configure the system clock to 80 MHz using the PLL
-- Output SYSCLK on the MCO pin (PA8)
-- Verify the configured clock frequency externally
+- Bare-metal I²C driver
+- Read the ENS160 Part ID
+- Configure the ENS160 operating mode
+- Read AQI, TVOC, and eCO₂ measurements
+- Display measurements on an SSD1306 OLED
+- Green, yellow, and red LEDs indicate air quality
+- No HAL or third-party libraries used for sensor communication
 
 ## Hardware Components
 
-- **STM32 Nucleo-L432KC**
-- **Oscilloscope or Logic Analyzer (optional)**
-- **Breadboard and jumper wires (optional)**
+- STM32 Nucleo-L432KC
+- ENS160 Air Quality Sensor
+- SSD1306 I²C OLED Display (128×64)
+- 3 LEDs (Green, Yellow, Red)
+- Current-limiting resistors
+- Breadboard
+- Jumper wires
 
 ## Pin Connections
 
+### ENS160
+
+| STM32 Pin | ENS160 |
+| ----------|--------|
+| PB6       | SCL    |
+| PB7       | SDA    |
+| 3.3V      | VIN    |
+| GND       | GND    |
+
+### SSD1306 OLED
+
+| STM32 Pin | OLED |
+| ----------|------|
+| PB6       | SCL  |
+| PB7       | SDA  |
+| 3.3V      | VCC  |
+| GND       | GND  |
+
+### Status LEDs
+
 | STM32 Pin | Function |
-|-----------|----------|
-| PA8 | MCO (Microcontroller Clock Output) |
+| ----------|----------|
+| PA0       | Red LED |
+| PA1       | Yellow LED |
+| PA3       | Green LED |
 
 ## What You'll Learn
 
-1. How the STM32 clock tree works
-2. Why the default clock configuration is not the maximum operating frequency
-3. How to configure the PLL
-4. How to switch the system clock to the PLL
-5. Why Flash wait states are required
-6. How to output SYSCLK using MCO
-7. How to verify the clock frequency with test equipment
-
-## Code Structure
-
-- `clocks.h` – Clock configuration function declarations
-- `clocks.c` – RCC and PLL initialization
-- `main.c` – MCO configuration example
+1. How the I²C protocol works
+2. How to configure the STM32 I²C peripheral
+3. How register-based communication works
+4. How repeated START conditions are used
+5. How to read single-byte and multi-byte registers
+6. How to interface multiple I²C devices on the same bus
+7. How to display sensor data on an OLED
+8. How to use GPIO pins for simple status indicators
 
 ## Board
 
@@ -65,8 +92,12 @@ The project also demonstrates how to output the system clock using the **Microco
 
 ## Disclaimer
 
-This code is for **educational purposes only**.
-Clock configuration involves direct register manipulation, which may prevent the microcontroller from operating correctly if configured improperly.
-Always verify your clock settings against the reference manual and datasheet for your specific STM32 device.
-The code may contain bugs or simplifications and is **not intended for production or safety-critical applications**.
-Equip Embedded bears no responsibility for hardware damage, data loss, or other issues resulting from the use or misuse of this code.
+This code is provided for **educational purposes only**.
+
+It demonstrates direct register-level programming of the STM32 microcontroller without using the STM32 HAL. While every effort has been made to keep the code simple and easy to understand, it may contain bugs, omissions, or simplifications.
+
+Always consult the reference manual, datasheet, and sensor documentation for your specific hardware before using this code in your own projects.
+
+This project is **not intended for production, commercial, or safety-critical applications**.
+
+Equip Embedded assumes no responsibility for hardware damage, data loss, or other issues resulting from the use or misuse of this code.
