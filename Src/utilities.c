@@ -1,15 +1,12 @@
 /**
   ******************************************************************************
-  * @file    main.c
+  * @file    utilities.c
   * @author  Equip Embedded
-  * @brief   Bare-metal STM32 register example.
+  * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
-  *          This file may contain:
-  *           - Data structures and address mapping for peripherals
-  *           - Register declarations and bit definitions
-  *           - Macros to access hardware registers
-  *           - Function calls
+  * This file contains:
+  *      - TIM2-based delay function implementations
   *
   ******************************************************************************
   * MIT License
@@ -36,32 +33,37 @@
   ******************************************************************************
   */
 
-#include <stdio.h>
-#include "device_headers/stm32l432xx.h"
-#include "device_drivers/clocks.h"
-#include "device_drivers/gpio.h"
 #include "utilities.h"
 
-int main(void)
-{
-	// Configure the system clock to 80 MHz.
-	rcc_pll80mhz_init();
+void delay_init() {
+    // Enable the TIM2 peripheral clock
+    RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;
 
-    // Enable GPIOA peripheral clock
-    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+    // Set timer to 1 MHz: 80 MHz / (79 + 1) = 1 MHz
+    TIM2->PSC = 79;
 
-    // PIN 0
-    GPIO_Init(GPIOA, GPIO_PIN_0, GPIO_MODE_OUTPUT,
-    		GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
+    // Set maximum 32-bit counter value for free-running operation
+    TIM2->ARR = 0xFFFFFFFF;
 
-    delay_init();
+    // Start counter at 0
+    TIM2->CNT = 0;
 
-    while (1)
-    {
-        GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_HIGH);
-        delay_ms(100);    // HIGH for 1 second
+    // Apply the prescaler configuration
+    TIM2->EGR = TIM_EGR_UG;
 
-        GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_LOW);
-        delay_ms(100);    // LOW for 1 second
-    }
+    // Enable the timer counter
+    TIM2->CR1 = TIM_CR1_CEN;
+}
+
+void delay_us(uint32_t us) {
+    // Capture the starting timer value
+    uint32_t t1 = TIM2->CNT;
+
+    // Wait until the requested number of ticks has elapsed
+    while ((uint32_t)(TIM2->CNT - t1) < us);
+}
+
+void delay_ms(uint32_t ms) {
+    // Convert milliseconds to microseconds
+    delay_us(ms * 1000);
 }

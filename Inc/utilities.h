@@ -1,15 +1,12 @@
 /**
   ******************************************************************************
-  * @file    main.c
+  * @file    utilities.h
   * @author  Equip Embedded
-  * @brief   Bare-metal STM32 register example.
+  * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
   *          This file may contain:
-  *           - Data structures and address mapping for peripherals
-  *           - Register declarations and bit definitions
-  *           - Macros to access hardware registers
-  *           - Function calls
+  *           - TIM2-based delay function declarations
   *
   ******************************************************************************
   * MIT License
@@ -36,32 +33,15 @@
   ******************************************************************************
   */
 
-#include <stdio.h>
+#ifndef UTILITIES_H_
+#define UTILITIES_H_
+
+#include <stdint.h>
 #include "device_headers/stm32l432xx.h"
-#include "device_drivers/clocks.h"
-#include "device_drivers/gpio.h"
-#include "utilities.h"
 
-int main(void)
-{
-	// Configure the system clock to 80 MHz.
-	rcc_pll80mhz_init();
 
-    // Enable GPIOA peripheral clock
-    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+void delay_init(void);
+void delay_ms(uint32_t ms);
+void delay_us(uint32_t us);
 
-    // PIN 0
-    GPIO_Init(GPIOA, GPIO_PIN_0, GPIO_MODE_OUTPUT,
-    		GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
-
-    delay_init();
-
-    while (1)
-    {
-        GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_HIGH);
-        delay_ms(100);    // HIGH for 1 second
-
-        GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_LOW);
-        delay_ms(100);    // LOW for 1 second
-    }
-}
+#endif /* UTILITIES_H_ */

@@ -1,90 +1,72 @@
 All code written by Equip Embedded in this repository is licensed under the MIT License.
 STM32CubeIDE-generated files (startup, linker script, CMSIS device headers, etc.) remain under STMicroelectronics copyright.
 
-# STM32 Nucleo Bare-Metal Series — ENS160 Air Quality Sensor (I²C)
+# STM32 Nucleo Bare-Metal Series — TIM2 Delay Function
 
-This repository contains **bare-metal STM32L4 code** demonstrating how to interface the **ENS160 Air Quality Sensor** using direct register access.
+This repository contains **bare-metal STM32L4 code** demonstrating how to create accurate microsecond and millisecond delays using the **TIM2 hardware timer**.
 
 No HAL is used—only CMSIS device headers and memory-mapped peripheral registers.
 
-## Lesson: Reading the ENS160 Air Quality Sensor
+## Lesson: Building a Delay Function with TIM2
 
-In this lesson, we communicate with the **ENS160** over the **I²C bus** using bare-metal programming. We write our own I²C driver to read and write sensor registers without relying on vendor libraries.
+In this lesson, we configure **TIM2** as a free-running 32-bit timer and use it to create accurate delay functions.
 
-The project displays **Air Quality Index (AQI)**, **estimated CO₂ (eCO₂)**, and **Total Volatile Organic Compounds (TVOC)** on an SSD1306 OLED display. Three LEDs provide an immediate visual indication of the current air quality.
+The STM32L432KC is running at **80 MHz**. TIM2 uses a prescaler of 79 to produce a **1 MHz counter frequency**, giving us:
+
+**1 timer tick = 1 µs**
+
+The delay function uses the timer counter to measure elapsed time instead of relying on software instruction loops.
 
 ## Key Concepts Covered
 
-- Bare-metal I²C communication
-- STM32 I²C peripheral configuration
-- I²C register read and write operations
-- Repeated START conditions
-- ENS160 register map
-- Reading multi-byte sensor data
-- SSD1306 OLED communication over I²C
-- Air Quality Index (AQI)
-- Total Volatile Organic Compounds (TVOC)
-- Equivalent CO₂ (eCO₂)
-- GPIO output control using LEDs
+- Bare-metal timer configuration
+- STM32 TIM2 peripheral
+- Timer prescaler
+- 32-bit timer counter
+- Free-running timer
+- Microsecond timing
+- Millisecond timing
+- Unsigned subtraction and timer rollover
+- Measuring elapsed time
+- Hardware-based delays
+- Direct register access
 
 ## Features
 
-- Bare-metal I²C driver
-- Read the ENS160 Part ID
-- Configure the ENS160 operating mode
-- Read AQI, TVOC, and eCO₂ measurements
-- Display measurements on an SSD1306 OLED
-- Green, yellow, and red LEDs indicate air quality
-- No HAL or third-party libraries used for sensor communication
+- TIM2-based delay functionality
+- Microsecond delays
+- Millisecond delays
+- 1 µs timer resolution
+- Free-running 32-bit counter
+- Timer rollover-safe elapsed-time calculation
+- No HAL or third-party libraries
 
 ## Hardware Components
 
 - STM32 Nucleo-L432KC
-- ENS160 Air Quality Sensor
-- SSD1306 I²C OLED Display (128×64)
-- 3 LEDs (Green, Yellow, Red)
-- Current-limiting resistors
-- Breadboard
-- Jumper wires
+- Logic analyzer or oscilloscope (optional)
 
-## Pin Connections
+## Timer Configuration
 
-### ENS160
-
-| STM32 Pin | ENS160 |
-| ----------|--------|
-| PB6       | SCL    |
-| PB7       | SDA    |
-| 3.3V      | VIN    |
-| GND       | GND    |
-
-### SSD1306 OLED
-
-| STM32 Pin | OLED |
-| ----------|------|
-| PB6       | SCL  |
-| PB7       | SDA  |
-| 3.3V      | VCC  |
-| GND       | GND  |
-
-### Status LEDs
-
-| STM32 Pin | Function |
-| ----------|----------|
-| PA0       | Red LED |
-| PA1       | Yellow LED |
-| PA3       | Green LED |
+| Parameter | Value |
+| --------- | ----- |
+| System Clock | 80 MHz |
+| TIM2 Prescaler | 79 |
+| TIM2 Counter Clock | 1 MHz |
+| Timer Resolution | 1 µs |
+| Counter Size | 32-bit |
+| Timer Mode | Up-counter / Free-running |
 
 ## What You'll Learn
 
-1. How the I²C protocol works
-2. How to configure the STM32 I²C peripheral
-3. How register-based communication works
-4. How repeated START conditions are used
-5. How to read single-byte and multi-byte registers
-6. How to interface multiple I²C devices on the same bus
-7. How to display sensor data on an OLED
-8. How to use GPIO pins for simple status indicators
+1. How to enable the TIM2 peripheral clock
+2. How a timer prescaler works
+3. How to configure TIM2 for a 1 MHz counter
+4. How to create a microsecond delay
+5. How to create a millisecond delay
+6. How to measure elapsed time using a hardware timer
+7. How unsigned subtraction handles timer rollover
+8. How hardware timers can be used for peripheral timeouts and event timing
 
 ## Board
 
@@ -96,7 +78,7 @@ This code is provided for **educational purposes only**.
 
 It demonstrates direct register-level programming of the STM32 microcontroller without using the STM32 HAL. While every effort has been made to keep the code simple and easy to understand, it may contain bugs, omissions, or simplifications.
 
-Always consult the reference manual, datasheet, and sensor documentation for your specific hardware before using this code in your own projects.
+Always consult the reference manual and datasheet for your specific hardware before using this code in your own projects.
 
 This project is **not intended for production, commercial, or safety-critical applications**.
 
