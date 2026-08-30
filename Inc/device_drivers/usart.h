@@ -1,0 +1,50 @@
+/**
+  ******************************************************************************
+  * @file    usart.h
+  * @author  Equip Embedded
+  * @brief   Hardware peripheral interface definitions and macros.
+  * @note    This copyright applies only to this file.
+  *
+  *          This file may contains:
+  *           - USART initialization and configuration
+  *           - Data transmission functions
+  *           - String transmission functions
+  *           - Data reception functions
+  *
+  *
+  ******************************************************************************
+  * MIT License
+  *
+  * Copyright (c) 2026 Equip Embedded
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+  * of this software and associated documentation files (the "Software"), to deal
+  * in the Software without restriction, including without limitation the rights
+  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  * copies of the Software, and to permit persons to whom the Software is
+  * furnished to do so, subject to the following conditions:
+  *
+  * The above copyright notice and this permission notice shall be included in
+  * all copies or substantial portions of the Software.
+  *
+  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  * THE SOFTWARE.
+  ******************************************************************************
+  */
+
+#ifndef DEVICE_DRIVERS_USART_H_
+#define DEVICE_DRIVERS_USART_H_
+
+#include "device_headers/stm32l432xx.h"
+
+void usart2_init(void);
+void usart2_send(char c);
+void usart2_print(char *str);
+char usart2_receive(void);
+
+#endif /* DEVICE_DRIVERS_USART_H_ */

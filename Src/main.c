@@ -40,28 +40,58 @@
 #include "device_headers/stm32l432xx.h"
 #include "device_drivers/clocks.h"
 #include "device_drivers/gpio.h"
+#include "device_drivers/usart.h"
 #include "utilities.h"
 
 int main(void)
 {
-	// Configure the system clock to 80 MHz.
+	// Configure the system clock to run at 80 MHz.
 	rcc_pll80mhz_init();
 
-    // Enable GPIOA peripheral clock
-    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+	// Enable the GPIOA peripheral clock.
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 
-    // PIN 0
-    GPIO_Init(GPIOA, GPIO_PIN_0, GPIO_MODE_OUTPUT,
-    		GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
+	// Enable the USART2 peripheral clock.
+	RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 
-    delay_init();
+	// Configure PA2 as USART2 TX.
+	GPIO_Init(GPIOA, GPIO_PIN_2, GPIO_MODE_ALTERNATE,
+	          GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_HIGH, GPIO_PULL_NONE);
 
-    while (1)
-    {
-        GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_HIGH);
-        delay_ms(100);    // HIGH for 1 second
+	// Configure PA15 as USART2 RX.
+	GPIO_Init(GPIOA, GPIO_PIN_15, GPIO_MODE_ALTERNATE,
+	          GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_HIGH, GPIO_PULL_NONE);
 
-        GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_LOW);
-        delay_ms(100);    // LOW for 1 second
+	// Configure PA0 as a general-purpose output for the LED.
+	GPIO_Init(GPIOA, GPIO_PIN_0, GPIO_MODE_OUTPUT,
+	          GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_LOW, GPIO_PULL_NONE);
+
+	// Select the alternate functions for USART2.
+	SelectAltFunction(GPIOA, GPIO_PIN_2, AF7);   // USART2 TX
+	SelectAltFunction(GPIOA, GPIO_PIN_15, AF3);  // USART2 RX
+
+	// Initialize USART2
+	usart2_init();
+
+    while(1) {
+    	// Wait for and receive a character.
+    	char c = usart2_receive();
+
+    	// Echo the received character back through USART2.
+    	usart2_print("Received: ");
+    	usart2_send(c);
+    	usart2_print("\r\n");
+
+    	// Turn the LED on when 'h' is received.
+    	if (c == 'h') {
+    		GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_HIGH);
+    	}
+
+    	// Turn the LED off when 'l' is received.
+    	if (c == 'l') {
+    		GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_LOW);
+    	}
     }
+
+
 }

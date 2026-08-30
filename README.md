@@ -1,76 +1,88 @@
 All code written by Equip Embedded in this repository is licensed under the MIT License.
 STM32CubeIDE-generated files (startup, linker script, CMSIS device headers, etc.) remain under STMicroelectronics copyright.
 
-# STM32 Nucleo Bare-Metal Series — TIM2 Delay Function
+# STM32 Nucleo Bare-Metal Series — USART Communication
 
-This repository contains **bare-metal STM32L4 code** demonstrating how to create accurate microsecond and millisecond delays using the **TIM2 hardware timer**.
+This repository contains **bare-metal STM32L4 code** demonstrating how to configure and use **USART2** for serial communication.
 
 No HAL is used—only CMSIS device headers and memory-mapped peripheral registers.
 
-## Lesson: Building a Delay Function with TIM2
+## Lesson: USART Communication
 
-In this lesson, we configure **TIM2** as a free-running 32-bit timer and use it to create accurate delay functions.
+In this lesson, we configure **USART2** for asynchronous serial communication at **115200 baud**.
 
-The STM32L432KC is running at **80 MHz**. TIM2 uses a prescaler of 79 to produce a **1 MHz counter frequency**, giving us:
+The STM32L432KC is running at **80 MHz**. USART2 is configured with:
 
-**1 timer tick = 1 µs**
+- TX for transmitting data
+- RX for receiving data
+- 115200 baud rate
+- Asynchronous communication
 
-The delay function uses the timer counter to measure elapsed time instead of relying on software instruction loops.
+The program waits for a character to be received and then sends it back through the USART connection.
+
+The received character can also control an LED:
+
+- Send `h` to turn the LED on
+- Send `l` to turn the LED off
 
 ## Key Concepts Covered
 
-- Bare-metal timer configuration
-- STM32 TIM2 peripheral
-- Timer prescaler
-- 32-bit timer counter
-- Free-running timer
-- Microsecond timing
-- Millisecond timing
-- Unsigned subtraction and timer rollover
-- Measuring elapsed time
-- Hardware-based delays
+- Bare-metal USART configuration
+- Asynchronous serial communication
+- USART transmitter and receiver
+- Baud rate configuration
+- USART status and data registers
+- Character transmission
+- Character reception
+- String transmission
+- GPIO alternate functions
 - Direct register access
+- UART vs. USART
 
 ## Features
 
-- TIM2-based delay functionality
-- Microsecond delays
-- Millisecond delays
-- 1 µs timer resolution
-- Free-running 32-bit counter
-- Timer rollover-safe elapsed-time calculation
+- USART2 initialization
+- 115200 baud communication
+- Character transmission
+- Character reception
+- String transmission
+- Echoing received characters
+- LED control using serial commands
 - No HAL or third-party libraries
 
 ## Hardware Components
 
 - STM32 Nucleo-L432KC
-- Logic analyzer or oscilloscope (optional)
+- USB connection to the onboard ST-LINK
+- Serial terminal application
 
-## Timer Configuration
+## USART Configuration
 
 | Parameter | Value |
 | --------- | ----- |
 | System Clock | 80 MHz |
-| TIM2 Prescaler | 79 |
-| TIM2 Counter Clock | 1 MHz |
-| Timer Resolution | 1 µs |
-| Counter Size | 32-bit |
-| Timer Mode | Up-counter / Free-running |
+| Peripheral | USART2 |
+| Baud Rate | 115200 |
+| TX Pin | PA2 |
+| RX Pin | PA15 |
+| TX Alternate Function | AF7 |
+| RX Alternate Function | AF3 |
+| Communication Mode | Asynchronous |
+| Data Direction | Transmit and Receive |
 
 ## What You'll Learn
 
-1. How to enable the TIM2 peripheral clock
-2. How a timer prescaler works
-3. How to configure TIM2 for a 1 MHz counter
-4. How to create a microsecond delay
-5. How to create a millisecond delay
-6. How to measure elapsed time using a hardware timer
-7. How unsigned subtraction handles timer rollover
-8. How hardware timers can be used for peripheral timeouts and event timing
+1. How to enable the USART2 peripheral clock
+2. How to configure GPIO pins for USART alternate functions
+3. How to configure the USART baud rate
+4. How to enable the USART transmitter and receiver
+5. How to transmit a character
+6. How to transmit a string
+7. How to receive a character
+8. How to use USART communication to control an LED
+9. The difference between UART and USART
+10. How asynchronous serial communication works
 
-## Board
-
-- STM32 Nucleo-L432KC
 
 ## Disclaimer
 
@@ -82,4 +94,4 @@ Always consult the reference manual and datasheet for your specific hardware bef
 
 This project is **not intended for production, commercial, or safety-critical applications**.
 
-Equip Embedded assumes no responsibility for hardware damage, data loss, or other issues resulting from the use or misuse of this code.
+Equip Embedded assumes no responsibility for injury, hardware damage, data loss, or other issues resulting from the use or misuse of this code.
