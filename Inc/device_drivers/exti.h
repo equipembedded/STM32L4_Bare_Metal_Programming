@@ -1,15 +1,14 @@
 /**
   ******************************************************************************
-  * @file    main.c
+  * @file    exti.h
   * @author  Equip Embedded
-  * @brief   Bare-metal STM32 register example.
+  * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
   *          This file may contain:
-  *           - Data structures and address mapping for peripherals
-  *           - Register declarations and bit definitions
-  *           - Macros to access hardware registers
-  *           - Function calls
+  *           - EXTI initialization function prototype(s)
+  *           - EXTI-related macros/definitions (pin, line, or trigger config)
+  *           - Include guards and required peripheral header includes
   *
   ******************************************************************************
   * MIT License
@@ -36,45 +35,14 @@
   ******************************************************************************
   */
 
-#include <stdio.h>
+#ifndef DEVICE_DRIVERS_EXTI_H_
+#define DEVICE_DRIVERS_EXTI_H_
+
+#include <stdint.h>
 #include "device_headers/stm32l432xx.h"
-#include "device_drivers/clocks.h"
 #include "device_drivers/gpio.h"
-#include "device_drivers/exti.h"
 
-int main(void)
-{
-	// Configure the system clock to run at 80 MHz
-	rcc_pll80mhz_init();
+void exti_init(void);
+void EXTI1_IRQHandler(void);
 
-	// Enable the GPIOA peripheral clock
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
-
-    // Enable the SYSCFG peripheral clock (required for EXTI line-to-port mapping)
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-
-
-    // Configure PA0 as a push-pull output with no pull resistor (drives the LED)
-    GPIO_Init(GPIOA, GPIO_PIN_0,
-              GPIO_MODE_OUTPUT,
-              GPIO_OTYPE_PUSHPULL,
-              GPIO_OUTPUT_SPEED_LOW,
-              GPIO_PULL_NONE);
-
-    // Configure PA1 as an input with an internal pull-up (reads the button)
-    GPIO_Init(GPIOA, GPIO_PIN_1,
-              GPIO_MODE_INPUT,
-              GPIO_OTYPE_PUSHPULL,
-              GPIO_OUTPUT_SPEED_LOW,
-              GPIO_PULL_UP);
-
-    // Set up EXTI line 1 (falling edge, interrupt enabled, NVIC enabled)
-    exti_init();
-
-    // Main loop: sleep until an interrupt occurs (all real work happens in the ISR)
-    while(1) {
-    	// Wait for interrupt (low-power idle)
-    	__WFI();
-    }
-
-}
+#endif /* DEVICE_DRIVERS_EXTI_H_ */

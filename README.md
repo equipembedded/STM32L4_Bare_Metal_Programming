@@ -1,88 +1,80 @@
 All code written by Equip Embedded in this repository is licensed under the MIT License.
 STM32CubeIDE-generated files (startup, linker script, CMSIS device headers, etc.) remain under STMicroelectronics copyright.
 
-# STM32 Nucleo Bare-Metal Series — USART Communication
+# STM32 Nucleo Bare-Metal Series — External Interrupts (EXTI)
 
-This repository contains **bare-metal STM32L4 code** demonstrating how to configure and use **USART2** for serial communication.
+This repository contains **bare-metal STM32L4 code** demonstrating how to configure and use **external interrupts (EXTI)** to respond to a button press.
 
 No HAL is used—only CMSIS device headers and memory-mapped peripheral registers.
 
-## Lesson: USART Communication
+## Lesson: External Interrupts (EXTI)
 
-In this lesson, we configure **USART2** for asynchronous serial communication at **115200 baud**.
+In this lesson, we configure a **GPIO pin as a button input** and use the **EXTI peripheral** to generate an interrupt whenever the button is pressed.
 
-The STM32L432KC is running at **80 MHz**. USART2 is configured with:
+The STM32L432KC is running at **80 MHz**. EXTI is configured with:
 
-- TX for transmitting data
-- RX for receiving data
-- 115200 baud rate
-- Asynchronous communication
+- PA1 mapped as the EXTI1 interrupt source
+- Falling-edge trigger detection
+- Interrupt unmasked and enabled in the NVIC
 
-The program waits for a character to be received and then sends it back through the USART connection.
+When the button is pressed, the EXTI1 interrupt fires and the ISR toggles an LED on PA0.
 
-The received character can also control an LED:
-
-- Send `h` to turn the LED on
-- Send `l` to turn the LED off
+The LED state is controlled entirely from within the interrupt service routine—no polling is used in the main loop.
 
 ## Key Concepts Covered
 
-- Bare-metal USART configuration
-- Asynchronous serial communication
-- USART transmitter and receiver
-- Baud rate configuration
-- USART status and data registers
-- Character transmission
-- Character reception
-- String transmission
-- GPIO alternate functions
+- Bare-metal EXTI configuration
+- Mapping a GPIO pin to an EXTI line via SYSCFG
+- Edge-triggered interrupt detection (falling edge)
+- NVIC interrupt enable
+- Writing an interrupt service routine (ISR)
+- Clearing a write-1-to-clear pending flag correctly
+- Reading GPIO input state from within an ISR
+- Toggling GPIO output state from within an ISR
+- Low-power idle using `__WFI()`
 - Direct register access
-- UART vs. USART
 
 ## Features
 
-- USART2 initialization
-- 115200 baud communication
-- Character transmission
-- Character reception
-- String transmission
-- Echoing received characters
-- LED control using serial commands
+- EXTI1 initialization
+- Falling-edge triggered interrupt
+- Button-controlled LED toggle
+- Interrupt-driven design (no polling)
+- Low-power wait-for-interrupt main loop
 - No HAL or third-party libraries
 
 ## Hardware Components
 
 - STM32 Nucleo-L432KC
+- Onboard user button / external push-button
+- Onboard or external LED
 - USB connection to the onboard ST-LINK
-- Serial terminal application
 
-## USART Configuration
+## EXTI Configuration
 
 | Parameter | Value |
 | --------- | ----- |
 | System Clock | 80 MHz |
-| Peripheral | USART2 |
-| Baud Rate | 115200 |
-| TX Pin | PA2 |
-| RX Pin | PA15 |
-| TX Alternate Function | AF7 |
-| RX Alternate Function | AF3 |
-| Communication Mode | Asynchronous |
-| Data Direction | Transmit and Receive |
+| Peripheral | EXTI1 |
+| Trigger Edge | Falling |
+| Button Pin | PA1 |
+| LED Pin | PA0 |
+| Pull Configuration | Pull-up (button input) |
+| Interrupt Controller | NVIC |
+| Power Mode | Wait-for-interrupt (`__WFI()`) |
 
 ## What You'll Learn
 
-1. How to enable the USART2 peripheral clock
-2. How to configure GPIO pins for USART alternate functions
-3. How to configure the USART baud rate
-4. How to enable the USART transmitter and receiver
-5. How to transmit a character
-6. How to transmit a string
-7. How to receive a character
-8. How to use USART communication to control an LED
-9. The difference between UART and USART
-10. How asynchronous serial communication works
-
+1. How to enable the GPIOA and SYSCFG peripheral clocks
+2. How to configure GPIO pins for digital input and output
+3. How to map a GPIO pin to an EXTI line using SYSCFG
+4. How to configure falling-edge trigger detection
+5. How to unmask and enable an EXTI interrupt line
+6. How to enable an interrupt in the NVIC
+7. How to write and structure an interrupt service routine (ISR)
+8. How to correctly clear a write-1-to-clear pending flag
+9. How to read and toggle GPIO state from within an ISR
+10. How to use `__WFI()` for low-power idle in the main loop
 
 ## Disclaimer
 

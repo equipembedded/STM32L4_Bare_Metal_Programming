@@ -7,6 +7,7 @@
 C_SRCS += \
 ../Src/device_drivers/clocks.c \
 ../Src/device_drivers/ens160.c \
+../Src/device_drivers/exti.c \
 ../Src/device_drivers/gpio.c \
 ../Src/device_drivers/i2c.c \
 ../Src/device_drivers/spi.c \
@@ -17,6 +18,7 @@ C_SRCS += \
 OBJS += \
 ./Src/device_drivers/clocks.o \
 ./Src/device_drivers/ens160.o \
+./Src/device_drivers/exti.o \
 ./Src/device_drivers/gpio.o \
 ./Src/device_drivers/i2c.o \
 ./Src/device_drivers/spi.o \
@@ -27,6 +29,7 @@ OBJS += \
 C_DEPS += \
 ./Src/device_drivers/clocks.d \
 ./Src/device_drivers/ens160.d \
+./Src/device_drivers/exti.d \
 ./Src/device_drivers/gpio.d \
 ./Src/device_drivers/i2c.d \
 ./Src/device_drivers/spi.d \
@@ -42,7 +45,7 @@ Src/device_drivers/%.o Src/device_drivers/%.su Src/device_drivers/%.cyclo: ../Sr
 clean: clean-Src-2f-device_drivers
 
 clean-Src-2f-device_drivers:
-	-$(RM) ./Src/device_drivers/clocks.cyclo ./Src/device_drivers/clocks.d ./Src/device_drivers/clocks.o ./Src/device_drivers/clocks.su ./Src/device_drivers/ens160.cyclo ./Src/device_drivers/ens160.d ./Src/device_drivers/ens160.o ./Src/device_drivers/ens160.su ./Src/device_drivers/gpio.cyclo ./Src/device_drivers/gpio.d ./Src/device_drivers/gpio.o ./Src/device_drivers/gpio.su ./Src/device_drivers/i2c.cyclo ./Src/device_drivers/i2c.d ./Src/device_drivers/i2c.o ./Src/device_drivers/i2c.su ./Src/device_drivers/spi.cyclo ./Src/device_drivers/spi.d ./Src/device_drivers/spi.o ./Src/device_drivers/spi.su ./Src/device_drivers/ssd1306.cyclo ./Src/device_drivers/ssd1306.d ./Src/device_drivers/ssd1306.o ./Src/device_drivers/ssd1306.su ./Src/device_drivers/timers.cyclo ./Src/device_drivers/timers.d ./Src/device_drivers/timers.o ./Src/device_drivers/timers.su ./Src/device_drivers/usart.cyclo ./Src/device_drivers/usart.d ./Src/device_drivers/usart.o ./Src/device_drivers/usart.su
+	-$(RM) ./Src/device_drivers/clocks.cyclo ./Src/device_drivers/clocks.d ./Src/device_drivers/clocks.o ./Src/device_drivers/clocks.su ./Src/device_drivers/ens160.cyclo ./Src/device_drivers/ens160.d ./Src/device_drivers/ens160.o ./Src/device_drivers/ens160.su ./Src/device_drivers/exti.cyclo ./Src/device_drivers/exti.d ./Src/device_drivers/exti.o ./Src/device_drivers/exti.su ./Src/device_drivers/gpio.cyclo ./Src/device_drivers/gpio.d ./Src/device_drivers/gpio.o ./Src/device_drivers/gpio.su ./Src/device_drivers/i2c.cyclo ./Src/device_drivers/i2c.d ./Src/device_drivers/i2c.o ./Src/device_drivers/i2c.su ./Src/device_drivers/spi.cyclo ./Src/device_drivers/spi.d ./Src/device_drivers/spi.o ./Src/device_drivers/spi.su ./Src/device_drivers/ssd1306.cyclo ./Src/device_drivers/ssd1306.d ./Src/device_drivers/ssd1306.o ./Src/device_drivers/ssd1306.su ./Src/device_drivers/timers.cyclo ./Src/device_drivers/timers.d ./Src/device_drivers/timers.o ./Src/device_drivers/timers.su ./Src/device_drivers/usart.cyclo ./Src/device_drivers/usart.d ./Src/device_drivers/usart.o ./Src/device_drivers/usart.su
 
 .PHONY: clean-Src-2f-device_drivers
 

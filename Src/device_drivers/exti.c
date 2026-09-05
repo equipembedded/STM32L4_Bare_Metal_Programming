@@ -1,15 +1,15 @@
 /**
   ******************************************************************************
-  * @file    main.c
+  * @file    exti.c
   * @author  Equip Embedded
-  * @brief   Bare-metal STM32 register example.
+  * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
   *          This file may contain:
-  *           - Data structures and address mapping for peripherals
-  *           - Register declarations and bit definitions
-  *           - Macros to access hardware registers
-  *           - Function calls
+  *           - EXTI line initialization functions
+  *           - EXTI interrupt handler(s) (ISR callbacks)
+  *           - GPIO pin state read/write helpers used by EXTI callbacks
+  *           - EXTI line configuration macros (trigger edge, port mapping)
   *
   ******************************************************************************
   * MIT License
@@ -36,45 +36,40 @@
   ******************************************************************************
   */
 
-#include <stdio.h>
-#include "device_headers/stm32l432xx.h"
-#include "device_drivers/clocks.h"
-#include "device_drivers/gpio.h"
 #include "device_drivers/exti.h"
 
-int main(void)
-{
-	// Configure the system clock to run at 80 MHz
-	rcc_pll80mhz_init();
+void exti_init(void) {
+	// Select PA1 as the source port for EXTI line 1 (clear EXTI1 bits in SYSCFG_EXTICR1)
+	SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI1;
 
-	// Enable the GPIOA peripheral clock
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+	// Enable falling-trigger detection on EXTI line 1
+	EXTI->FTSR1 |= EXTI_FTSR1_FT1;
 
-    // Enable the SYSCFG peripheral clock (required for EXTI line-to-port mapping)
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+	// Clear any pending interrupt flag on EXTI line 1 before enabling
+	EXTI->PR1 = EXTI_PR1_PIF1;
 
+	// Unmask (enable) interrupt request on EXTI line 1
+	EXTI->IMR1 |= EXTI_IMR1_IM1;
 
-    // Configure PA0 as a push-pull output with no pull resistor (drives the LED)
-    GPIO_Init(GPIOA, GPIO_PIN_0,
-              GPIO_MODE_OUTPUT,
-              GPIO_OTYPE_PUSHPULL,
-              GPIO_OUTPUT_SPEED_LOW,
-              GPIO_PULL_NONE);
+	// Enable EXTI1 interrupt in the NVIC
+	NVIC_EnableIRQ(EXTI1_IRQn);
 
-    // Configure PA1 as an input with an internal pull-up (reads the button)
-    GPIO_Init(GPIOA, GPIO_PIN_1,
-              GPIO_MODE_INPUT,
-              GPIO_OTYPE_PUSHPULL,
-              GPIO_OUTPUT_SPEED_LOW,
-              GPIO_PULL_UP);
+}
 
-    // Set up EXTI line 1 (falling edge, interrupt enabled, NVIC enabled)
-    exti_init();
+void EXTI1_IRQHandler(void) {
+	// Check if the pending flag for EXTI line 1 is set
+	if (EXTI->PR1 & EXTI_PR1_PIF1) {
 
-    // Main loop: sleep until an interrupt occurs (all real work happens in the ISR)
-    while(1) {
-    	// Wait for interrupt (low-power idle)
-    	__WFI();
-    }
+		// Clear the pending flag (write 1 to clear)
+		EXTI->PR1 = EXTI_PR1_PIF1;
 
+		// Check current output state of pin A1
+		if (GPIOA->ODR & GPIO_PIN_1) {
+			// If PA1 is high, drive pin PA0 low
+			GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_LOW);
+		} else {
+			// Otherwise (PA1 is low), drive pin PA0 high
+			GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_HIGH);
+		}
+	}
 }
