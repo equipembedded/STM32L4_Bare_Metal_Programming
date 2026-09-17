@@ -1,80 +1,112 @@
 All code written by Equip Embedded in this repository is licensed under the MIT License.
 STM32CubeIDE-generated files (startup, linker script, CMSIS device headers, etc.) remain under STMicroelectronics copyright.
 
-# STM32 Nucleo Bare-Metal Series — External Interrupts (EXTI)
+# STM32 Nucleo Bare-Metal Series — GPS Communication Using USART
 
-This repository contains **bare-metal STM32L4 code** demonstrating how to configure and use **external interrupts (EXTI)** to respond to a button press.
+This repository contains **bare-metal STM32L4 code** demonstrating how to communicate with an **ATGM336H GPS receiver** using USART1 and forward the received data through USART2 to a serial terminal.
 
 No HAL is used—only CMSIS device headers and memory-mapped peripheral registers.
 
-## Lesson: External Interrupts (EXTI)
+## Lesson: GPS Communication Using USART
 
-In this lesson, we configure a **GPIO pin as a button input** and use the **EXTI peripheral** to generate an interrupt whenever the button is pressed.
+In this lesson, we configure **USART1** to communicate with an ATGM336H GPS receiver at **9600 baud**.
 
-The STM32L432KC is running at **80 MHz**. EXTI is configured with:
+The STM32L432KC is running at **80 MHz**. USART1 is configured with:
 
-- PA1 mapped as the EXTI1 interrupt source
-- Falling-edge trigger detection
-- Interrupt unmasked and enabled in the NVIC
+- TX for transmitting data to the GPS receiver
+- RX for receiving data from the GPS receiver
+- 9600 baud rate
+- Asynchronous communication
 
-When the button is pressed, the EXTI1 interrupt fires and the ISR toggles an LED on PA0.
+USART2 is configured to communicate with a PC running a serial terminal such as PuTTY.
 
-The LED state is controlled entirely from within the interrupt service routine—no polling is used in the main loop.
+The STM32 receives the GPS data one character at a time through USART1 and immediately sends it through USART2 so the raw GPS data can be viewed on the PC.
+
+The GPS receiver sends its navigation data using the **NMEA 0183** format.
 
 ## Key Concepts Covered
 
-- Bare-metal EXTI configuration
-- Mapping a GPIO pin to an EXTI line via SYSCFG
-- Edge-triggered interrupt detection (falling edge)
-- NVIC interrupt enable
-- Writing an interrupt service routine (ISR)
-- Clearing a write-1-to-clear pending flag correctly
-- Reading GPIO input state from within an ISR
-- Toggling GPIO output state from within an ISR
-- Low-power idle using `__WFI()`
+- Bare-metal USART configuration
+- Asynchronous serial communication
+- USART transmitter and receiver
+- Baud rate configuration
+- USART status and data registers
+- Character transmission
+- Character reception
+- GPIO alternate functions
 - Direct register access
+- GPS communication
+- NMEA 0183 data
+- Raw GPS data
 
 ## Features
 
-- EXTI1 initialization
-- Falling-edge triggered interrupt
-- Button-controlled LED toggle
-- Interrupt-driven design (no polling)
-- Low-power wait-for-interrupt main loop
+- USART1 initialization for GPS communication
+- USART2 initialization for PC communication
+- 9600 baud communication
+- Character reception
+- Character transmission
+- Forwarding GPS data from USART1 to USART2
+- Viewing raw NMEA data using a serial terminal
 - No HAL or third-party libraries
 
 ## Hardware Components
 
 - STM32 Nucleo-L432KC
-- Onboard user button / external push-button
-- Onboard or external LED
+- ATGM336H GPS receiver
 - USB connection to the onboard ST-LINK
+- Serial terminal application such as PuTTY
 
-## EXTI Configuration
+## USART Configuration
 
-| Parameter | Value |
-| --------- | ----- |
-| System Clock | 80 MHz |
-| Peripheral | EXTI1 |
-| Trigger Edge | Falling |
-| Button Pin | PA1 |
-| LED Pin | PA0 |
-| Pull Configuration | Pull-up (button input) |
-| Interrupt Controller | NVIC |
-| Power Mode | Wait-for-interrupt (`__WFI()`) |
+| Parameter | USART1 | USART2 |
+| --------- | ------ | ------ |
+| Purpose | GPS communication | PC/terminal communication |
+| Baud Rate | 9600 | 9600 |
+| TX Pin | PA9 | PA2 |
+| RX Pin | PA10 | PA15 |
+| TX Alternate Function | AF7 | AF7 |
+| RX Alternate Function | AF7 | AF3 |
+| Communication Mode | Asynchronous | Asynchronous |
+| Data Direction | Transmit and Receive | Transmit and Receive |
+
+## GPS Connection
+
+The ATGM336H GPS receiver is connected to USART1:
+
+- GPS TXD → STM32 PA10 (USART1 RX)
+- GPS RXD → STM32 PA9 (USART1 TX)
+- GPS GND → STM32 GND
+
+The GPS receiver continuously sends NMEA messages through its TXD pin.
+
+## Example NMEA Messages
+
+The GPS receiver can send different types of NMEA messages, including:
+
+- `$GNGGA` — Position and fix information
+- `$GNGSA` — Satellite and position solution information
+- `$GPGSV` — GPS satellites in view
+- `$BDGSV` — BeiDou satellites in view
+- `$GNRMC` — Basic navigation information
+- `$GNVTG` — Course and speed information
+- `$GNZDA` — Date and time information
+- `$GPTXT` — Receiver status information
+
+In this lesson, the STM32 does not parse these messages. It simply forwards the raw data to the PC so they can be viewed in a serial terminal.
 
 ## What You'll Learn
 
-1. How to enable the GPIOA and SYSCFG peripheral clocks
-2. How to configure GPIO pins for digital input and output
-3. How to map a GPIO pin to an EXTI line using SYSCFG
-4. How to configure falling-edge trigger detection
-5. How to unmask and enable an EXTI interrupt line
-6. How to enable an interrupt in the NVIC
-7. How to write and structure an interrupt service routine (ISR)
-8. How to correctly clear a write-1-to-clear pending flag
-9. How to read and toggle GPIO state from within an ISR
-10. How to use `__WFI()` for low-power idle in the main loop
+1. How to enable the USART1 and USART2 peripheral clocks
+2. How to configure GPIO pins for USART alternate functions
+3. How to configure the USART baud rate
+4. How to enable the USART transmitter and receiver
+5. How to receive data from a GPS receiver
+6. How to transmit a character through USART
+7. How to forward data from one USART to another
+8. How to view raw GPS NMEA data using PuTTY
+9. The difference between UART and USART
+10. How GPS receivers communicate with microcontrollers using asynchronous serial communication
 
 ## Disclaimer
 

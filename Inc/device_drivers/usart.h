@@ -5,7 +5,7 @@
   * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
-  *          This file may contains:
+  *          This file may contain:
   *           - USART initialization and configuration
   *           - Data transmission functions
   *           - String transmission functions
@@ -42,9 +42,9 @@
 
 #include "device_headers/stm32l432xx.h"
 
-void usart2_init(void);
-void usart2_send(char c);
-void usart2_print(char *str);
-char usart2_receive(void);
+void usart_init(USART_TypeDef * usart, uint32_t baud_rate);
+void usart_send(USART_TypeDef * usart, char c);
+void usart_print(USART_TypeDef * usart, char *str);
+char usart_receive(USART_TypeDef * usart);
 
 #endif /* DEVICE_DRIVERS_USART_H_ */

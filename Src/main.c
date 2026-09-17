@@ -40,7 +40,7 @@
 #include "device_headers/stm32l432xx.h"
 #include "device_drivers/clocks.h"
 #include "device_drivers/gpio.h"
-#include "device_drivers/exti.h"
+#include "device_drivers/usart.h"
 
 int main(void)
 {
@@ -50,31 +50,44 @@ int main(void)
 	// Enable the GPIOA peripheral clock
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
 
-    // Enable the SYSCFG peripheral clock (required for EXTI line-to-port mapping)
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+	// Enable the USART1 peripheral clock
+	RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+
+	// Enable the USART2 peripheral clock
+	RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
 
 
-    // Configure PA0 as a push-pull output with no pull resistor (drives the LED)
-    GPIO_Init(GPIOA, GPIO_PIN_0,
-              GPIO_MODE_OUTPUT,
-              GPIO_OTYPE_PUSHPULL,
-              GPIO_OUTPUT_SPEED_LOW,
-              GPIO_PULL_NONE);
+	// Configure PA9 as USART1 TX.
+	GPIO_Init(GPIOA, GPIO_PIN_9, GPIO_MODE_ALTERNATE,
+	          GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_HIGH, GPIO_PULL_NONE);
 
-    // Configure PA1 as an input with an internal pull-up (reads the button)
-    GPIO_Init(GPIOA, GPIO_PIN_1,
-              GPIO_MODE_INPUT,
-              GPIO_OTYPE_PUSHPULL,
-              GPIO_OUTPUT_SPEED_LOW,
-              GPIO_PULL_UP);
+	// Configure PA10 as USART1 RX.
+	GPIO_Init(GPIOA, GPIO_PIN_10, GPIO_MODE_ALTERNATE,
+	          GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_HIGH, GPIO_PULL_NONE);
 
-    // Set up EXTI line 1 (falling edge, interrupt enabled, NVIC enabled)
-    exti_init();
+	// Configure PA2 as USART2 TX.
+	GPIO_Init(GPIOA, GPIO_PIN_2, GPIO_MODE_ALTERNATE,
+	          GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_HIGH, GPIO_PULL_NONE);
 
-    // Main loop: sleep until an interrupt occurs (all real work happens in the ISR)
-    while(1) {
-    	// Wait for interrupt (low-power idle)
-    	__WFI();
-    }
+	// Configure PA15 as USART2 RX.
+	GPIO_Init(GPIOA, GPIO_PIN_15, GPIO_MODE_ALTERNATE,
+	          GPIO_OTYPE_PUSHPULL, GPIO_OUTPUT_SPEED_HIGH, GPIO_PULL_NONE);
 
+
+	// Select the alternate functions for USART1 pins.
+	SelectAltFunction(GPIOA, GPIO_PIN_9, AF7);   // USART1 TX
+	SelectAltFunction(GPIOA, GPIO_PIN_10, AF7);  // USART1 RX
+
+	// Select the alternate functions for USART2 pins.
+	SelectAltFunction(GPIOA, GPIO_PIN_2, AF7);   // USART2 TX
+	SelectAltFunction(GPIOA, GPIO_PIN_15, AF3);  // USART2 RX
+
+	// Initialize USART
+	usart_init(USART1, 9600);
+	usart_init(USART2, 9600);
+
+	while(1) {
+		char c = usart_receive(USART1);
+		usart_send(USART2, c);
+	}
 }

@@ -5,7 +5,7 @@
   * @brief   Hardware peripheral interface definitions and macros.
   * @note    This copyright applies only to this file.
   *
-  *          This file may contains:
+  *          This file may contain:
   *           - USART function declarations
   *           - USART configuration definitions
   *
@@ -36,47 +36,56 @@
 
 #include "device_drivers/usart.h"
 
-void usart2_init(void)
+void usart_init(USART_TypeDef * usart, uint32_t baud_rate)
 {
-    // Set the baud rate to 115200.
-    // USART2 is running from an 80 MHz peripheral clock.
-    USART2->BRR = 80000000U / 115200U;
+    // Set the baud rate.
+    // The USART is running from an 80 MHz peripheral clock.
+
+    usart->BRR = 80000000U / baud_rate;
 
     // Enable the transmitter (TE), receiver (RE),
     // and finally enable the USART peripheral (UE).
-    USART2->CR1 = USART_CR1_TE |
-                  USART_CR1_RE |
-                  USART_CR1_UE;
+
+    usart->CR1 = USART_CR1_TE |
+                 USART_CR1_RE |
+                 USART_CR1_UE;
 }
 
-void usart2_send(char c)
+void usart_send(USART_TypeDef * usart, char c)
 {
     // Wait until the transmit data register is empty.
     // This means we can send the next character.
-    while (!(USART2->ISR & USART_ISR_TXE));
+
+    while (!(usart->ISR & USART_ISR_TXE));
 
     // Write the character to the transmit data register.
-    USART2->TDR = c;
+
+    usart->TDR = c;
 }
 
-void usart2_print(char *str)
+void usart_print(USART_TypeDef * usart, char *str)
 {
     // Keep sending characters until we reach
     // the null terminator at the end of the string.
+
     while (*str != '\0')
     {
-        usart2_send(*str);
+        usart_send(usart, *str);
 
         // Move to the next character in the string.
+
         str++;
     }
 }
 
-char usart2_receive(void)
+char usart_receive(USART_TypeDef * usart)
 {
     // Wait until a new character has been received.
-    while (!(USART2->ISR & USART_ISR_RXNE));
+
+    while (!(usart->ISR & USART_ISR_RXNE));
 
     // Read and return the received character.
-    return (char)USART2->RDR;
+
+    return (char)usart->RDR;
 }
+
